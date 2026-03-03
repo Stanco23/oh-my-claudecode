@@ -511,7 +511,7 @@ export function startDaemon(config?: DaemonConfig): DaemonResponse {
     return { success: false, message: 'Failed to start daemon process' };
   } catch (error) {
     // Clean up config file on failure
-    try { unlinkSync(configPath); } catch {}
+    try { unlinkSync(configPath); } catch { /* ignore cleanup errors */ }
     return {
       success: false,
       message: 'Failed to start daemon',
