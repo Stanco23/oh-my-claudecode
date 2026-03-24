@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseRalphthonArgs } from '../../cli/commands/ralphthon.js';
+import { buildRalphthonDeepInterviewPrompt } from '../deep-interview-prompt.js';
 import { RALPHTHON_DEFAULTS } from '../types.js';
 
 describe('Ralphthon CLI', () => {
@@ -74,3 +75,23 @@ describe('Ralphthon CLI', () => {
     });
   });
 });
+
+  describe('buildRalphthonDeepInterviewPrompt', () => {
+    it('adds the explicit weakest-dimension, citation, and ontology guidance', () => {
+      const prompt = buildRalphthonDeepInterviewPrompt('Improve onboarding', 5, 60000);
+
+      expect(prompt).toContain('name the weakest dimension');
+      expect(prompt).toContain('cite the repo evidence');
+      expect(prompt).toContain('ontology-style questioning');
+      expect(prompt).toContain('"maxWaves": 5');
+      expect(prompt).toContain('"pollIntervalMs": 60000');
+    });
+
+    it('sanitizes multiline task input before embedding it in the slash command', () => {
+      const prompt = buildRalphthonDeepInterviewPrompt('Fix auth\n\u0000flow', 3, 30000);
+
+      expect(prompt).toContain('/deep-interview Fix auth flow');
+      expect(prompt).not.toContain('\n\u0000flow');
+    });
+  });
+

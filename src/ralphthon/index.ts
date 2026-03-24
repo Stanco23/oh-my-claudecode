@@ -45,6 +45,9 @@ export {
 
 export type { RalphthonPrdStatus } from './prd.js';
 
+// Deep interview handoff
+export { buildRalphthonDeepInterviewPrompt } from './deep-interview-prompt.js';
+
 // Orchestrator
 export {
   readRalphthonState,

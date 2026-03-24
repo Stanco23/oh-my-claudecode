@@ -194,6 +194,8 @@ describe('Builtin Skills', () => {
       expect(skill?.template).toContain('interview_id');
       expect(skill?.template).toContain('challenge_modes_used');
       expect(skill?.template).toContain('ontology_snapshots');
+      expect(skill?.template).toContain('explicit weakest-dimension rationale reporting');
+      expect(skill?.template).toContain('repo-evidence citation requirement');
     });
 
 
@@ -211,6 +213,10 @@ describe('Builtin Skills', () => {
       expect(skill?.template).toContain('Skill("oh-my-claudecode:omc-plan")');
       expect(skill?.template).toContain('`--consensus --direct`');
       expect(skill?.template).toContain('`.omc/specs/deep-interview-{slug}.md`');
+      expect(skill?.template).toContain('Why now: {one_sentence_targeting_rationale}');
+      expect(skill?.template).toContain('cite the repo evidence');
+      expect(skill?.template).toContain('Ontology-style question for scope-fuzzy tasks');
+      expect(skill?.template).toContain('Every round explicitly names the weakest dimension and why it is the next target');
       expect(skill?.argumentHint).toContain('--autoresearch');
       expect(skill?.template).toContain('zero-learning-curve setup lane for `omc autoresearch`');
       expect(skill?.template).toContain('autoresearch --mission "<mission>" --eval "<evaluator>"');

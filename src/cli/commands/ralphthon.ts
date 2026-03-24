@@ -23,6 +23,7 @@ import {
   getRalphthonPrdPath,
   initRalphthonPrd,
   sendKeysToPane,
+  buildRalphthonDeepInterviewPrompt,
 } from '../../ralphthon/index.js';
 import type {
   RalphthonCliOptions,
@@ -267,19 +268,11 @@ export async function ralphthonCommand(args: string[]): Promise<void> {
 
     // Inject deep-interview command to the leader pane
     // The orchestrator will wait for the PRD to appear
-    // Sanitize task to prevent newline/control char injection via tmux send-keys
-    const sanitizedTask = options.task!.replace(/[\r\n\0]+/g, ' ').trim();
-    const interviewPrompt = `/deep-interview ${sanitizedTask}
-
-After the interview, generate a ralphthon-prd.json file in .omc/ with this structure:
-{
-  "project": "<project name>",
-  "branchName": "<branch>",
-  "description": "<description>",
-  "stories": [{ "id": "US-001", "title": "...", "description": "...", "acceptanceCriteria": [...], "priority": "high", "tasks": [{ "id": "T-001", "title": "...", "description": "...", "status": "pending", "retries": 0 }] }],
-  "hardening": [],
-  "config": { "maxWaves": ${options.maxWaves}, "cleanWavesForTermination": 3, "pollIntervalMs": ${options.pollInterval * 1000}, "idleThresholdMs": 30000, "maxRetries": 3, "skipInterview": false }
-}`;
+    const interviewPrompt = buildRalphthonDeepInterviewPrompt(
+      options.task!,
+      options.maxWaves!,
+      options.pollInterval! * 1000,
+    );
 
     // Initialize state in interview phase
     const state = initOrchestrator(
