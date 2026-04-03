@@ -245,6 +245,7 @@ function mergeWithDefaults(config) {
             ? { rateLimitsProvider: config.rateLimitsProvider }
             : {}),
         ...(config.maxWidth != null ? { maxWidth: config.maxWidth } : {}),
+        ...(config.layout ? { layout: config.layout } : {}),
     };
 }
 /**

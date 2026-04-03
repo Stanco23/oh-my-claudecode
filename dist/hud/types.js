@@ -4,6 +4,20 @@
  * Type definitions for the HUD state, configuration, and rendering.
  */
 import { DEFAULT_MISSION_BOARD_CONFIG } from './mission-board.js';
+/**
+ * Default element order matching the current hardcoded order in render.ts.
+ * Used as fallback when no layout is configured.
+ */
+export const DEFAULT_ELEMENT_ORDER = {
+    line1: ['cwd', 'gitRepo', 'gitBranch', 'model', 'apiKeySource', 'profile'],
+    main: [
+        'omcLabel', 'rateLimits', 'customBuckets', 'permission', 'thinking',
+        'promptTime', 'session', 'tokens', 'ralph', 'autopilot', 'prd',
+        'skills', 'lastSkill', 'contextBar', 'agents', 'background',
+        'callCounts', 'lastTool', 'sessionSummary',
+    ],
+    detail: ['missionBoard', 'agents', 'contextWarning', 'todos'],
+};
 export const DEFAULT_HUD_USAGE_POLL_INTERVAL_MS = 90 * 1000;
 export const DEFAULT_HUD_CONFIG = {
     preset: 'focused',

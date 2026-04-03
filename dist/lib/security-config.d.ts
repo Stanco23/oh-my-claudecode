@@ -24,6 +24,10 @@ export interface SecurityConfig {
     disableAutoUpdate: boolean;
     /** Hard max iterations for persistent modes (0 = unlimited) */
     hardMaxIterations: number;
+    /** Disable remote MCP servers (Exa, Context7) */
+    disableRemoteMcp: boolean;
+    /** Disable external LLM providers (Codex, Gemini) in team mode */
+    disableExternalLLM: boolean;
 }
 /**
  * Resolve the full security configuration.
@@ -42,4 +46,8 @@ export declare function isProjectSkillsDisabled(): boolean;
 export declare function isAutoUpdateDisabled(): boolean;
 /** Convenience: get hard max iterations (0 = unlimited) */
 export declare function getHardMaxIterations(): number;
+/** Convenience: are remote MCP servers disabled? */
+export declare function isRemoteMcpDisabled(): boolean;
+/** Convenience: are external LLM providers disabled? */
+export declare function isExternalLLMDisabled(): boolean;
 //# sourceMappingURL=security-config.d.ts.map

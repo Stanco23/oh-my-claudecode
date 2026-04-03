@@ -34,9 +34,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// node_modules/commander/lib/error.js
+// ../oh-my-claudecode/node_modules/commander/lib/error.js
 var require_error = __commonJS({
-  "node_modules/commander/lib/error.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/lib/error.js"(exports2) {
     var CommanderError2 = class extends Error {
       /**
        * Constructs the CommanderError class
@@ -69,9 +69,9 @@ var require_error = __commonJS({
   }
 });
 
-// node_modules/commander/lib/argument.js
+// ../oh-my-claudecode/node_modules/commander/lib/argument.js
 var require_argument = __commonJS({
-  "node_modules/commander/lib/argument.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/lib/argument.js"(exports2) {
     var { InvalidArgumentError: InvalidArgumentError2 } = require_error();
     var Argument2 = class {
       /**
@@ -196,9 +196,9 @@ var require_argument = __commonJS({
   }
 });
 
-// node_modules/commander/lib/help.js
+// ../oh-my-claudecode/node_modules/commander/lib/help.js
 var require_help = __commonJS({
-  "node_modules/commander/lib/help.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/lib/help.js"(exports2) {
     var { humanReadableArgName } = require_argument();
     var Help2 = class {
       constructor() {
@@ -610,9 +610,9 @@ var require_help = __commonJS({
   }
 });
 
-// node_modules/commander/lib/option.js
+// ../oh-my-claudecode/node_modules/commander/lib/option.js
 var require_option = __commonJS({
-  "node_modules/commander/lib/option.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/lib/option.js"(exports2) {
     var { InvalidArgumentError: InvalidArgumentError2 } = require_error();
     var Option2 = class {
       /**
@@ -882,9 +882,9 @@ var require_option = __commonJS({
   }
 });
 
-// node_modules/commander/lib/suggestSimilar.js
+// ../oh-my-claudecode/node_modules/commander/lib/suggestSimilar.js
 var require_suggestSimilar = __commonJS({
-  "node_modules/commander/lib/suggestSimilar.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/lib/suggestSimilar.js"(exports2) {
     var maxDistance = 3;
     function editDistance(a, b) {
       if (Math.abs(a.length - b.length) > maxDistance)
@@ -962,9 +962,9 @@ var require_suggestSimilar = __commonJS({
   }
 });
 
-// node_modules/commander/lib/command.js
+// ../oh-my-claudecode/node_modules/commander/lib/command.js
 var require_command = __commonJS({
-  "node_modules/commander/lib/command.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/lib/command.js"(exports2) {
     var EventEmitter = require("node:events").EventEmitter;
     var childProcess = require("node:child_process");
     var path22 = require("node:path");
@@ -3005,9 +3005,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
   }
 });
 
-// node_modules/commander/index.js
+// ../oh-my-claudecode/node_modules/commander/index.js
 var require_commander = __commonJS({
-  "node_modules/commander/index.js"(exports2) {
+  "../oh-my-claudecode/node_modules/commander/index.js"(exports2) {
     var { Argument: Argument2 } = require_argument();
     var { Command: Command2 } = require_command();
     var { CommanderError: CommanderError2, InvalidArgumentError: InvalidArgumentError2 } = require_error();
@@ -7523,16 +7523,41 @@ function loadTemplate(filename) {
 function isWindows() {
   return process.platform === "win32";
 }
+function getClaudeConfigDir3() {
+  return getConfigDir();
+}
+function normalizePath(value) {
+  return value.replace(/\\/g, "/").replace(/\/+$/, "");
+}
+function isDefaultClaudeConfigDir() {
+  return normalizePath(getClaudeConfigDir3()) === normalizePath((0, import_path41.join)((0, import_os8.homedir)(), ".claude"));
+}
+function quoteCommandPath(path22) {
+  return `"${path22.replace(/"/g, '\\"')}"`;
+}
+function buildHookCommand(filename) {
+  if (isWindows()) {
+    if (isDefaultClaudeConfigDir()) {
+      return `node "%USERPROFILE%\\\\.claude\\\\hooks\\\\${filename}"`;
+    }
+    return `node ${quoteCommandPath((0, import_path41.join)(getClaudeConfigDir3(), "hooks", filename))}`;
+  }
+  if (isDefaultClaudeConfigDir()) {
+    return `node "$HOME/.claude/hooks/${filename}"`;
+  }
+  return `node ${quoteCommandPath((0, import_path41.join)(getClaudeConfigDir3(), "hooks", filename).replace(/\\/g, "/"))}`;
+}
 function getHooksSettingsConfig() {
   return HOOKS_SETTINGS_CONFIG_NODE;
 }
-var import_path41, import_fs30, import_url7, MIN_NODE_VERSION, ULTRAWORK_MESSAGE, ULTRATHINK_MESSAGE, SEARCH_MESSAGE, ANALYZE_MESSAGE, CODE_REVIEW_MESSAGE, SECURITY_REVIEW_MESSAGE, TDD_MESSAGE, RALPH_MESSAGE, PROMPT_TRANSLATION_MESSAGE, KEYWORD_DETECTOR_SCRIPT_NODE, STOP_CONTINUATION_SCRIPT_NODE, PERSISTENT_MODE_SCRIPT_NODE, CODE_SIMPLIFIER_SCRIPT_NODE, SESSION_START_SCRIPT_NODE, POST_TOOL_USE_SCRIPT_NODE, HOOKS_SETTINGS_CONFIG_NODE;
+var import_path41, import_fs30, import_url7, import_os8, MIN_NODE_VERSION, ULTRAWORK_MESSAGE, ULTRATHINK_MESSAGE, SEARCH_MESSAGE, ANALYZE_MESSAGE, CODE_REVIEW_MESSAGE, SECURITY_REVIEW_MESSAGE, TDD_MESSAGE, RALPH_MESSAGE, PROMPT_TRANSLATION_MESSAGE, KEYWORD_DETECTOR_SCRIPT_NODE, STOP_CONTINUATION_SCRIPT_NODE, PERSISTENT_MODE_SCRIPT_NODE, CODE_SIMPLIFIER_SCRIPT_NODE, SESSION_START_SCRIPT_NODE, POST_TOOL_USE_SCRIPT_NODE, HOOKS_SETTINGS_CONFIG_NODE;
 var init_hooks = __esm({
   "src/installer/hooks.ts"() {
     "use strict";
     import_path41 = require("path");
     import_fs30 = require("fs");
     import_url7 = require("url");
+    import_os8 = require("os");
     init_config_dir();
     MIN_NODE_VERSION = 20;
     ULTRAWORK_MESSAGE = `<ultrawork-mode>
@@ -7748,9 +7773,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                // Note: On Windows, %USERPROFILE% is expanded by cmd.exe
-                // On Unix with node hooks, $HOME is expanded by the shell
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\keyword-detector.mjs"' : 'node "$HOME/.claude/hooks/keyword-detector.mjs"'
+                command: buildHookCommand("keyword-detector.mjs")
               }
             ]
           }
@@ -7760,7 +7783,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\session-start.mjs"' : 'node "$HOME/.claude/hooks/session-start.mjs"'
+                command: buildHookCommand("session-start.mjs")
               }
             ]
           }
@@ -7770,7 +7793,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\pre-tool-use.mjs"' : 'node "$HOME/.claude/hooks/pre-tool-use.mjs"'
+                command: buildHookCommand("pre-tool-use.mjs")
               }
             ]
           }
@@ -7780,7 +7803,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\post-tool-use.mjs"' : 'node "$HOME/.claude/hooks/post-tool-use.mjs"'
+                command: buildHookCommand("post-tool-use.mjs")
               }
             ]
           }
@@ -7790,7 +7813,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\post-tool-use-failure.mjs"' : 'node "$HOME/.claude/hooks/post-tool-use-failure.mjs"'
+                command: buildHookCommand("post-tool-use-failure.mjs")
               }
             ]
           }
@@ -7800,7 +7823,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\persistent-mode.mjs"' : 'node "$HOME/.claude/hooks/persistent-mode.mjs"'
+                command: buildHookCommand("persistent-mode.mjs")
               }
             ]
           },
@@ -7808,7 +7831,7 @@ Respond to the user in their original language.
             hooks: [
               {
                 type: "command",
-                command: isWindows() ? 'node "%USERPROFILE%\\.claude\\hooks\\code-simplifier.mjs"' : 'node "$HOME/.claude/hooks/code-simplifier.mjs"'
+                command: buildHookCommand("code-simplifier.mjs")
               }
             ]
           }
@@ -7864,7 +7887,7 @@ function resolveNodeBinary() {
   if (process.platform === "win32") {
     return "node";
   }
-  const home = (0, import_os8.homedir)();
+  const home = (0, import_os9.homedir)();
   const nvmBase = (0, import_path43.join)(home, ".nvm", "versions", "node");
   if ((0, import_fs32.existsSync)(nvmBase)) {
     try {
@@ -7910,14 +7933,14 @@ function pickLatestVersion(versions) {
     return 0;
   })[0];
 }
-var import_fs32, import_child_process12, import_path43, import_os8;
+var import_fs32, import_child_process12, import_path43, import_os9;
 var init_resolve_node = __esm({
   "src/utils/resolve-node.ts"() {
     "use strict";
     import_fs32 = require("fs");
     import_child_process12 = require("child_process");
     import_path43 = require("path");
-    import_os8 = require("os");
+    import_os9 = require("os");
   }
 });
 
@@ -7944,7 +7967,7 @@ function getClaudeMcpConfigPath() {
   return (0, import_path44.join)((0, import_path44.dirname)(getConfigDir()), ".claude.json");
 }
 function getCodexConfigPath() {
-  const codexHome = process.env.CODEX_HOME?.trim() || (0, import_path44.join)((0, import_os9.homedir)(), ".codex");
+  const codexHome = process.env.CODEX_HOME?.trim() || (0, import_path44.join)((0, import_os10.homedir)(), ".codex");
   return (0, import_path44.join)(codexHome, "config.toml");
 }
 function isStringRecord(value) {
@@ -8329,12 +8352,12 @@ function inspectUnifiedMcpRegistrySync() {
     codexMismatched
   };
 }
-var import_fs33, import_os9, import_path44, MANAGED_START, MANAGED_END;
+var import_fs33, import_os10, import_path44, MANAGED_START, MANAGED_END;
 var init_mcp_registry = __esm({
   "src/installer/mcp-registry.ts"() {
     "use strict";
     import_fs33 = require("fs");
-    import_os9 = require("os");
+    import_os10 = require("os");
     import_path44 = require("path");
     init_config_dir();
     init_paths();
@@ -8376,7 +8399,7 @@ function getNewestInstalledVersionHint() {
   }
   const claudeCandidates = [
     (0, import_path45.join)(CLAUDE_CONFIG_DIR, "CLAUDE.md"),
-    (0, import_path45.join)((0, import_os10.homedir)(), "CLAUDE.md")
+    (0, import_path45.join)((0, import_os11.homedir)(), "CLAUDE.md")
   ];
   for (const candidatePath of claudeCandidates) {
     if (!(0, import_fs34.existsSync)(candidatePath)) continue;
@@ -8412,6 +8435,31 @@ function findLineAnchoredMarker(content, marker, fromEnd = false) {
 }
 function escapeRegex2(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function normalizePath2(value) {
+  return value.replace(/\\/g, "/").replace(/\/+$/, "");
+}
+function isDefaultClaudeConfigDirPath(configDir) {
+  return normalizePath2(configDir) === normalizePath2((0, import_path45.join)((0, import_os11.homedir)(), ".claude"));
+}
+function quoteShellArg(value) {
+  return `"${value.replace(/"/g, '\\"')}"`;
+}
+function buildStatusLineCommand(nodeBin, hudScriptPath, findNodePath) {
+  if (isWindows()) {
+    return `${quoteShellArg(nodeBin)} ${quoteShellArg(hudScriptPath)}`;
+  }
+  if (isDefaultClaudeConfigDirPath(CLAUDE_CONFIG_DIR)) {
+    if (findNodePath) {
+      return "sh $HOME/.claude/hud/find-node.sh $HOME/.claude/hud/omc-hud.mjs";
+    }
+    return "node $HOME/.claude/hud/omc-hud.mjs";
+  }
+  const normalizedHudScriptPath = hudScriptPath.replace(/\\/g, "/");
+  if (findNodePath) {
+    return `sh ${quoteShellArg(findNodePath.replace(/\\/g, "/"))} ${quoteShellArg(normalizedHudScriptPath)}`;
+  }
+  return `node ${quoteShellArg(normalizedHudScriptPath)}`;
 }
 function createLineAnchoredMarkerRegex(marker, flags = "gm") {
   return new RegExp(`^${escapeRegex2(marker)}$`, flags);
@@ -8461,8 +8509,9 @@ function isOmcHook(command) {
   if (omcPattern.test(lowerCommand) || fullNamePattern.test(lowerCommand)) {
     return true;
   }
-  const hookPathMatch = lowerCommand.match(/\.claude[/\\]hooks[/\\]([a-z0-9-]+\.mjs)/);
-  if (hookPathMatch && OMC_HOOK_FILENAMES.has(hookPathMatch[1])) {
+  const containsHooksDir = /hooks[/\\]/.test(lowerCommand);
+  const hookFilenameMatch = lowerCommand.match(/([a-z0-9-]+\.mjs)(?:$|["'\s])/);
+  if (containsHooksDir && hookFilenameMatch && OMC_HOOK_FILENAMES.has(hookFilenameMatch[1])) {
     return true;
   }
   return false;
@@ -8893,7 +8942,7 @@ function install(options = {}) {
     }
     if (!projectScoped) {
       const claudeMdPath = (0, import_path45.join)(CLAUDE_CONFIG_DIR, "CLAUDE.md");
-      const homeMdPath = (0, import_path45.join)((0, import_os10.homedir)(), "CLAUDE.md");
+      const homeMdPath = (0, import_path45.join)((0, import_os11.homedir)(), "CLAUDE.md");
       if (!(0, import_fs34.existsSync)(homeMdPath)) {
         const omcContent = loadClaudeMdContent();
         let existingContent = null;
@@ -9113,10 +9162,12 @@ function install(options = {}) {
             const findNodeDest = (0, import_path45.join)(HUD_DIR, "find-node.sh");
             (0, import_fs34.copyFileSync)(findNodeSrc, findNodeDest);
             (0, import_fs34.chmodSync)(findNodeDest, 493);
-            statusLineCommand = "sh $HOME/.claude/hud/find-node.sh $HOME/.claude/hud/omc-hud.mjs";
+            statusLineCommand = buildStatusLineCommand(nodeBin, hudScriptPath.replace(/\\/g, "/"), findNodeDest);
           } catch {
-            statusLineCommand = "node $HOME/.claude/hud/omc-hud.mjs";
+            statusLineCommand = buildStatusLineCommand(nodeBin, hudScriptPath.replace(/\\/g, "/"));
           }
+        } else {
+          statusLineCommand = buildStatusLineCommand(nodeBin, hudScriptPath);
         }
         const needsMigration = typeof existingSettings.statusLine === "string" && isOmcStatusLine(existingSettings.statusLine);
         if (!existingSettings.statusLine || needsMigration) {
@@ -9221,14 +9272,14 @@ function getInstallInfo() {
     return null;
   }
 }
-var import_fs34, import_path45, import_url9, import_os10, import_child_process13, CLAUDE_CONFIG_DIR, AGENTS_DIR, COMMANDS_DIR, SKILLS_DIR, HOOKS_DIR, HUD_DIR, SETTINGS_FILE, VERSION_FILE, CORE_COMMANDS, VERSION, OMC_VERSION_MARKER_PATTERN, OMC_HOOK_FILENAMES, STANDALONE_HOOK_TEMPLATE_FILES;
+var import_fs34, import_path45, import_url9, import_os11, import_child_process13, CLAUDE_CONFIG_DIR, AGENTS_DIR, COMMANDS_DIR, SKILLS_DIR, HOOKS_DIR, HUD_DIR, SETTINGS_FILE, VERSION_FILE, CORE_COMMANDS, VERSION, OMC_VERSION_MARKER_PATTERN, OMC_HOOK_FILENAMES, STANDALONE_HOOK_TEMPLATE_FILES;
 var init_installer = __esm({
   "src/installer/index.ts"() {
     "use strict";
     import_fs34 = require("fs");
     import_path45 = require("path");
     import_url9 = require("url");
-    import_os10 = require("os");
+    import_os11 = require("os");
     import_child_process13 = require("child_process");
     init_hooks();
     init_version();
@@ -12325,11 +12376,36 @@ var init_mission_board = __esm({
 });
 
 // src/hud/types.ts
-var DEFAULT_HUD_USAGE_POLL_INTERVAL_MS, DEFAULT_HUD_CONFIG, PRESET_CONFIGS;
+var DEFAULT_ELEMENT_ORDER, DEFAULT_HUD_USAGE_POLL_INTERVAL_MS, DEFAULT_HUD_CONFIG, PRESET_CONFIGS;
 var init_types2 = __esm({
   "src/hud/types.ts"() {
     "use strict";
     init_mission_board();
+    DEFAULT_ELEMENT_ORDER = {
+      line1: ["cwd", "gitRepo", "gitBranch", "model", "apiKeySource", "profile"],
+      main: [
+        "omcLabel",
+        "rateLimits",
+        "customBuckets",
+        "permission",
+        "thinking",
+        "promptTime",
+        "session",
+        "tokens",
+        "ralph",
+        "autopilot",
+        "prd",
+        "skills",
+        "lastSkill",
+        "contextBar",
+        "agents",
+        "background",
+        "callCounts",
+        "lastTool",
+        "sessionSummary"
+      ],
+      detail: ["missionBoard", "agents", "contextWarning", "todos"]
+    };
     DEFAULT_HUD_USAGE_POLL_INTERVAL_MS = 90 * 1e3;
     DEFAULT_HUD_CONFIG = {
       preset: "focused",
@@ -12895,7 +12971,8 @@ function mergeWithDefaults(config2) {
     usageApiPollIntervalMs: config2.usageApiPollIntervalMs ?? DEFAULT_HUD_CONFIG.usageApiPollIntervalMs,
     wrapMode: config2.wrapMode ?? DEFAULT_HUD_CONFIG.wrapMode,
     ...config2.rateLimitsProvider ? { rateLimitsProvider: config2.rateLimitsProvider } : {},
-    ...config2.maxWidth != null ? { maxWidth: config2.maxWidth } : {}
+    ...config2.maxWidth != null ? { maxWidth: config2.maxWidth } : {},
+    ...config2.layout ? { layout: config2.layout } : {}
   };
 }
 async function initializeHUDState(directory) {
@@ -22398,7 +22475,7 @@ function interpolatePath(pathTemplate, sessionId) {
   const date3 = now.toISOString().split("T")[0];
   const time3 = now.toISOString().split("T")[1].split(".")[0].replace(/:/g, "-");
   const safeSessionId = sessionId.replace(/[/\\..]/g, "_");
-  return (0, import_path70.normalize)(pathTemplate.replace(/~/g, (0, import_os11.homedir)()).replace(/\{session_id\}/g, safeSessionId).replace(/\{date\}/g, date3).replace(/\{time\}/g, time3));
+  return (0, import_path70.normalize)(pathTemplate.replace(/~/g, (0, import_os12.homedir)()).replace(/\{session_id\}/g, safeSessionId).replace(/\{date\}/g, date3).replace(/\{time\}/g, time3));
 }
 async function writeToFile(config2, content, sessionId) {
   try {
@@ -22514,13 +22591,13 @@ async function triggerStopCallbacks(metrics, _input, options = {}) {
     console.error("[stop-callback] Callback execution error:", error2);
   }
 }
-var import_fs56, import_path70, import_os11;
+var import_fs56, import_path70, import_os12;
 var init_callbacks = __esm({
   "src/hooks/session-end/callbacks.ts"() {
     "use strict";
     import_fs56 = require("fs");
     import_path70 = require("path");
-    import_os11 = require("os");
+    import_os12 = require("os");
     init_auto_update();
   }
 });
@@ -26196,10 +26273,10 @@ async function requeueDeadWorkerTasks(teamName, deadWorkerNames, cwd2) {
     await writeFile9(sidecarPath, JSON.stringify(sidecar, null, 2), "utf-8");
     const taskPath2 = absPath(cwd2, TeamPaths.taskFile(sanitized, task.id));
     try {
-      const { readFileSync: readFileSync82, writeFileSync: writeFileSync34 } = await import("fs");
+      const { readFileSync: readFileSync83, writeFileSync: writeFileSync34 } = await import("fs");
       const { withFileLockSync: withFileLockSync2 } = await Promise.resolve().then(() => (init_file_lock(), file_lock_exports));
       withFileLockSync2(taskPath2 + ".lock", () => {
-        const raw = readFileSync82(taskPath2, "utf-8");
+        const raw = readFileSync83(taskPath2, "utf-8");
         const taskData = JSON.parse(raw);
         if (taskData.status === "in_progress") {
           taskData.status = "pending";
@@ -29012,9 +29089,9 @@ var init_code_simplifier = __esm({
   }
 });
 
-// node_modules/safe-regex/lib/analyzer.js
+// ../oh-my-claudecode/node_modules/safe-regex/lib/analyzer.js
 var require_analyzer = __commonJS({
-  "node_modules/safe-regex/lib/analyzer.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/safe-regex/lib/analyzer.js"(exports2, module2) {
     var AnalyzerOptions = class {
       constructor(heuristic_replimit) {
         this.heuristic_replimit = heuristic_replimit;
@@ -29076,9 +29153,9 @@ var require_analyzer = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-dotall-s-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-dotall-s-transform.js
 var require_compat_dotall_s_transform = __commonJS({
-  "node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-dotall-s-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-dotall-s-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       // Whether `u` flag present. In which case we transform to
@@ -29128,9 +29205,9 @@ var require_compat_dotall_s_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-named-capturing-groups-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-named-capturing-groups-transform.js
 var require_compat_named_capturing_groups_transform = __commonJS({
-  "node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-named-capturing-groups-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-named-capturing-groups-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       // To track the names of the groups, and return them
@@ -29172,9 +29249,9 @@ var require_compat_named_capturing_groups_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-x-flag-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-x-flag-transform.js
 var require_compat_x_flag_transform = __commonJS({
-  "node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-x-flag-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/compat-x-flag-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       RegExp: function RegExp2(_ref) {
@@ -29187,9 +29264,9 @@ var require_compat_x_flag_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/compat-transpiler/transforms/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/index.js
 var require_transforms = __commonJS({
-  "node_modules/regexp-tree/dist/compat-transpiler/transforms/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/transforms/index.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       // "dotAll" `s` flag
@@ -29202,9 +29279,9 @@ var require_transforms = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/generator/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/generator/index.js
 var require_generator = __commonJS({
-  "node_modules/regexp-tree/dist/generator/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/generator/index.js"(exports2, module2) {
     "use strict";
     function gen(node) {
       return node ? generator[node.type](node) : "";
@@ -29342,9 +29419,9 @@ var require_generator = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/parser/unicode/parser-unicode-properties.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/parser/unicode/parser-unicode-properties.js
 var require_parser_unicode_properties = __commonJS({
-  "node_modules/regexp-tree/dist/parser/unicode/parser-unicode-properties.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/parser/unicode/parser-unicode-properties.js"(exports2, module2) {
     "use strict";
     var NON_BINARY_PROP_NAMES_TO_ALIASES = {
       General_Category: "gc",
@@ -29689,9 +29766,9 @@ var require_parser_unicode_properties = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/parser/generated/regexp-tree.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/parser/generated/regexp-tree.js
 var require_regexp_tree = __commonJS({
-  "node_modules/regexp-tree/dist/parser/generated/regexp-tree.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/parser/generated/regexp-tree.js"(exports2, module2) {
     "use strict";
     var _slicedToArray = /* @__PURE__ */ (function() {
       function sliceIterator(arr, i) {
@@ -30836,9 +30913,9 @@ var require_regexp_tree = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/parser/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/parser/index.js
 var require_parser = __commonJS({
-  "node_modules/regexp-tree/dist/parser/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/parser/index.js"(exports2, module2) {
     "use strict";
     var regexpTreeParser = require_regexp_tree();
     var generatedParseFn = regexpTreeParser.parse.bind(regexpTreeParser);
@@ -30850,9 +30927,9 @@ var require_parser = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/traverse/node-path.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/traverse/node-path.js
 var require_node_path = __commonJS({
-  "node_modules/regexp-tree/dist/traverse/node-path.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/traverse/node-path.js"(exports2, module2) {
     "use strict";
     var _createClass = /* @__PURE__ */ (function() {
       function defineProperties(target, props) {
@@ -31183,9 +31260,9 @@ var require_node_path = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/traverse/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/traverse/index.js
 var require_traverse = __commonJS({
-  "node_modules/regexp-tree/dist/traverse/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/traverse/index.js"(exports2, module2) {
     "use strict";
     var NodePath = require_node_path();
     function astTraverse(root2) {
@@ -31418,9 +31495,9 @@ var require_traverse = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/transform/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/transform/index.js
 var require_transform = __commonJS({
-  "node_modules/regexp-tree/dist/transform/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/transform/index.js"(exports2, module2) {
     "use strict";
     var _createClass = /* @__PURE__ */ (function() {
       function defineProperties(target, props) {
@@ -31552,9 +31629,9 @@ var require_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/compat-transpiler/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/index.js
 var require_compat_transpiler = __commonJS({
-  "node_modules/regexp-tree/dist/compat-transpiler/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/index.js"(exports2, module2) {
     "use strict";
     var compatTransforms = require_transforms();
     var _transform = require_transform();
@@ -31588,9 +31665,9 @@ var require_compat_transpiler = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/utils/clone.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/utils/clone.js
 var require_clone = __commonJS({
-  "node_modules/regexp-tree/dist/utils/clone.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/utils/clone.js"(exports2, module2) {
     "use strict";
     module2.exports = function clone2(obj) {
       if (obj === null || typeof obj !== "object") {
@@ -31610,9 +31687,9 @@ var require_clone = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-surrogate-pair-to-single-unicode-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-surrogate-pair-to-single-unicode-transform.js
 var require_char_surrogate_pair_to_single_unicode_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-surrogate-pair-to-single-unicode-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-surrogate-pair-to-single-unicode-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       shouldRun: function shouldRun(ast) {
@@ -31630,9 +31707,9 @@ var require_char_surrogate_pair_to_single_unicode_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-code-to-simple-char-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-code-to-simple-char-transform.js
 var require_char_code_to_simple_char_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-code-to-simple-char-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-code-to-simple-char-transform.js"(exports2, module2) {
     "use strict";
     var UPPER_A_CP = "A".codePointAt(0);
     var UPPER_Z_CP = "Z".codePointAt(0);
@@ -31684,9 +31761,9 @@ var require_char_code_to_simple_char_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-case-insensitive-lowercase-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-case-insensitive-lowercase-transform.js
 var require_char_case_insensitive_lowercase_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-case-insensitive-lowercase-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-case-insensitive-lowercase-transform.js"(exports2, module2) {
     "use strict";
     var UPPER_A_CP = "A".codePointAt(0);
     var UPPER_Z_CP = "Z".codePointAt(0);
@@ -31761,9 +31838,9 @@ var require_char_case_insensitive_lowercase_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-class-remove-duplicates-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-remove-duplicates-transform.js
 var require_char_class_remove_duplicates_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-class-remove-duplicates-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-remove-duplicates-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       CharacterClass: function CharacterClass(path22) {
@@ -31783,9 +31860,9 @@ var require_char_class_remove_duplicates_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/transform/utils.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/transform/utils.js
 var require_utils2 = __commonJS({
-  "node_modules/regexp-tree/dist/transform/utils.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/transform/utils.js"(exports2, module2) {
     "use strict";
     function _toConsumableArray(arr) {
       if (Array.isArray(arr)) {
@@ -31844,9 +31921,9 @@ var require_utils2 = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/quantifiers-merge-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/quantifiers-merge-transform.js
 var require_quantifiers_merge_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/quantifiers-merge-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/quantifiers-merge-transform.js"(exports2, module2) {
     "use strict";
     var _require = require_utils2();
     var increaseQuantifierByOne = _require.increaseQuantifierByOne;
@@ -31912,9 +31989,9 @@ var require_quantifiers_merge_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/quantifier-range-to-symbol-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/quantifier-range-to-symbol-transform.js
 var require_quantifier_range_to_symbol_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/quantifier-range-to-symbol-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/quantifier-range-to-symbol-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       Quantifier: function Quantifier(path22) {
@@ -31953,9 +32030,9 @@ var require_quantifier_range_to_symbol_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-to-chars-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-to-chars-transform.js
 var require_char_class_classranges_to_chars_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-to-chars-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-to-chars-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       ClassRange: function ClassRange(path22) {
@@ -31971,9 +32048,9 @@ var require_char_class_classranges_to_chars_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-meta-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-meta-transform.js
 var require_char_class_to_meta_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-meta-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-meta-transform.js"(exports2, module2) {
     "use strict";
     function _toConsumableArray(arr) {
       if (Array.isArray(arr)) {
@@ -32115,9 +32192,9 @@ var require_char_class_to_meta_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-single-char-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-single-char-transform.js
 var require_char_class_to_single_char_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-single-char-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-to-single-char-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       CharacterClass: function CharacterClass(path22) {
@@ -32174,9 +32251,9 @@ var require_char_class_to_single_char_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-escape-unescape-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-escape-unescape-transform.js
 var require_char_escape_unescape_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-escape-unescape-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-escape-unescape-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       _hasXFlag: false,
@@ -32274,9 +32351,9 @@ var require_char_escape_unescape_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-merge-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-merge-transform.js
 var require_char_class_classranges_merge_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-merge-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/char-class-classranges-merge-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       _hasIUFlags: false,
@@ -32493,9 +32570,9 @@ var require_char_class_classranges_merge_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/disjunction-remove-duplicates-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/disjunction-remove-duplicates-transform.js
 var require_disjunction_remove_duplicates_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/disjunction-remove-duplicates-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/disjunction-remove-duplicates-transform.js"(exports2, module2) {
     "use strict";
     var NodePath = require_node_path();
     var _require = require_utils2();
@@ -32519,9 +32596,9 @@ var require_disjunction_remove_duplicates_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/group-single-chars-to-char-class.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/group-single-chars-to-char-class.js
 var require_group_single_chars_to_char_class = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/group-single-chars-to-char-class.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/group-single-chars-to-char-class.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       Disjunction: function Disjunction(path22) {
@@ -32581,9 +32658,9 @@ var require_group_single_chars_to_char_class = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/remove-empty-group-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/remove-empty-group-transform.js
 var require_remove_empty_group_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/remove-empty-group-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/remove-empty-group-transform.js"(exports2, module2) {
     "use strict";
     module2.exports = {
       Group: function Group(path22) {
@@ -32602,9 +32679,9 @@ var require_remove_empty_group_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/ungroup-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/ungroup-transform.js
 var require_ungroup_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/ungroup-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/ungroup-transform.js"(exports2, module2) {
     "use strict";
     function _toConsumableArray(arr) {
       if (Array.isArray(arr)) {
@@ -32665,9 +32742,9 @@ var require_ungroup_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/combine-repeating-patterns-transform.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/combine-repeating-patterns-transform.js
 var require_combine_repeating_patterns_transform = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/combine-repeating-patterns-transform.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/combine-repeating-patterns-transform.js"(exports2, module2) {
     "use strict";
     function _toConsumableArray(arr) {
       if (Array.isArray(arr)) {
@@ -32817,9 +32894,9 @@ var require_combine_repeating_patterns_transform = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/transforms/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/index.js
 var require_transforms2 = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/transforms/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/transforms/index.js"(exports2, module2) {
     "use strict";
     module2.exports = /* @__PURE__ */ new Map([
       // \ud83d\ude80 -> \u{1f680}
@@ -32858,9 +32935,9 @@ var require_transforms2 = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/optimizer/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/index.js
 var require_optimizer = __commonJS({
-  "node_modules/regexp-tree/dist/optimizer/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/optimizer/index.js"(exports2, module2) {
     "use strict";
     var clone2 = require_clone();
     var parser = require_parser();
@@ -32922,9 +32999,9 @@ var require_optimizer = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/special-symbols.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/special-symbols.js
 var require_special_symbols = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/special-symbols.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/special-symbols.js"(exports2, module2) {
     "use strict";
     var EPSILON = "\u03B5";
     var EPSILON_CLOSURE = EPSILON + "*";
@@ -32935,9 +33012,9 @@ var require_special_symbols = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa.js
 var require_nfa = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa.js"(exports2, module2) {
     "use strict";
     var _slicedToArray = /* @__PURE__ */ (function() {
       function sliceIterator(arr, i) {
@@ -33172,9 +33249,9 @@ var require_nfa = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa-minimizer.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa-minimizer.js
 var require_dfa_minimizer = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa-minimizer.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa-minimizer.js"(exports2, module2) {
     "use strict";
     var _slicedToArray = /* @__PURE__ */ (function() {
       function sliceIterator(arr, i) {
@@ -33512,9 +33589,9 @@ var require_dfa_minimizer = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa.js
 var require_dfa = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/dfa/dfa.js"(exports2, module2) {
     "use strict";
     var _createClass = /* @__PURE__ */ (function() {
       function defineProperties(target, props) {
@@ -33829,9 +33906,9 @@ var require_dfa = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/state.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/state.js
 var require_state = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/state.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/state.js"(exports2, module2) {
     "use strict";
     var _createClass = /* @__PURE__ */ (function() {
       function defineProperties(target, props) {
@@ -33895,9 +33972,9 @@ var require_state = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-state.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-state.js
 var require_nfa_state = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-state.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-state.js"(exports2, module2) {
     "use strict";
     var _createClass = /* @__PURE__ */ (function() {
       function defineProperties(target, props) {
@@ -34094,9 +34171,9 @@ var require_nfa_state = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/builders.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/builders.js
 var require_builders = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/builders.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/builders.js"(exports2, module2) {
     "use strict";
     var NFA = require_nfa();
     var NFAState = require_nfa_state();
@@ -34224,9 +34301,9 @@ var require_builders = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-from-regexp.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-from-regexp.js
 var require_nfa_from_regexp = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-from-regexp.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/nfa/nfa-from-regexp.js"(exports2, module2) {
     "use strict";
     function _toConsumableArray(arr) {
       if (Array.isArray(arr)) {
@@ -34308,9 +34385,9 @@ var require_nfa_from_regexp = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/interpreter/finite-automaton/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/index.js
 var require_finite_automaton = __commonJS({
-  "node_modules/regexp-tree/dist/interpreter/finite-automaton/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/interpreter/finite-automaton/index.js"(exports2, module2) {
     "use strict";
     var NFA = require_nfa();
     var DFA = require_dfa();
@@ -34358,9 +34435,9 @@ var require_finite_automaton = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/compat-transpiler/runtime/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/runtime/index.js
 var require_runtime = __commonJS({
-  "node_modules/regexp-tree/dist/compat-transpiler/runtime/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/compat-transpiler/runtime/index.js"(exports2, module2) {
     "use strict";
     var _createClass = /* @__PURE__ */ (function() {
       function defineProperties(target, props) {
@@ -34448,9 +34525,9 @@ var require_runtime = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/dist/regexp-tree.js
+// ../oh-my-claudecode/node_modules/regexp-tree/dist/regexp-tree.js
 var require_regexp_tree2 = __commonJS({
-  "node_modules/regexp-tree/dist/regexp-tree.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/dist/regexp-tree.js"(exports2, module2) {
     "use strict";
     var compatTranspiler = require_compat_transpiler();
     var generator = require_generator();
@@ -34600,17 +34677,17 @@ var require_regexp_tree2 = __commonJS({
   }
 });
 
-// node_modules/regexp-tree/index.js
+// ../oh-my-claudecode/node_modules/regexp-tree/index.js
 var require_regexp_tree3 = __commonJS({
-  "node_modules/regexp-tree/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/regexp-tree/index.js"(exports2, module2) {
     "use strict";
     module2.exports = require_regexp_tree2();
   }
 });
 
-// node_modules/safe-regex/lib/heuristic-analyzer.js
+// ../oh-my-claudecode/node_modules/safe-regex/lib/heuristic-analyzer.js
 var require_heuristic_analyzer = __commonJS({
-  "node_modules/safe-regex/lib/heuristic-analyzer.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/safe-regex/lib/heuristic-analyzer.js"(exports2, module2) {
     var regexpTree2 = require_regexp_tree3();
     var analyzer = require_analyzer();
     var HeuristicAnalyzer = class extends analyzer.Analyzer {
@@ -34667,17 +34744,17 @@ var require_heuristic_analyzer = __commonJS({
   }
 });
 
-// node_modules/safe-regex/lib/analyzer-family.js
+// ../oh-my-claudecode/node_modules/safe-regex/lib/analyzer-family.js
 var require_analyzer_family = __commonJS({
-  "node_modules/safe-regex/lib/analyzer-family.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/safe-regex/lib/analyzer-family.js"(exports2, module2) {
     var heuristicAnalyzer = require_heuristic_analyzer();
     module2.exports = [heuristicAnalyzer];
   }
 });
 
-// node_modules/safe-regex/index.js
+// ../oh-my-claudecode/node_modules/safe-regex/index.js
 var require_safe_regex = __commonJS({
-  "node_modules/safe-regex/index.js"(exports2, module2) {
+  "../oh-my-claudecode/node_modules/safe-regex/index.js"(exports2, module2) {
     var analyzer = require_analyzer();
     var analyzerFamily = require_analyzer_family();
     var DEFAULT_SAFE_REP_LIMIT = 25;
@@ -34908,7 +34985,7 @@ function readKeychainCredentials() {
   const serviceName = getKeychainServiceName();
   const candidateAccounts = [];
   try {
-    const username = (0, import_os18.userInfo)().username?.trim();
+    const username = (0, import_os19.userInfo)().username?.trim();
     if (username) {
       candidateAccounts.push(username);
     }
@@ -35349,7 +35426,7 @@ async function getUsage() {
     return { rateLimits: null, error: "network" };
   }
 }
-var import_fs86, import_path104, import_child_process28, import_crypto15, import_os18, import_https3, CACHE_TTL_FAILURE_MS, CACHE_TTL_TRANSIENT_NETWORK_MS, MAX_RATE_LIMITED_BACKOFF_MS, API_TIMEOUT_MS2, MAX_STALE_DATA_MS, TOKEN_REFRESH_URL_HOSTNAME, USAGE_CACHE_LOCK_OPTS, TOKEN_REFRESH_URL_PATH, DEFAULT_OAUTH_CLIENT_ID;
+var import_fs86, import_path104, import_child_process28, import_crypto15, import_os19, import_https3, CACHE_TTL_FAILURE_MS, CACHE_TTL_TRANSIENT_NETWORK_MS, MAX_RATE_LIMITED_BACKOFF_MS, API_TIMEOUT_MS2, MAX_STALE_DATA_MS, TOKEN_REFRESH_URL_HOSTNAME, USAGE_CACHE_LOCK_OPTS, TOKEN_REFRESH_URL_PATH, DEFAULT_OAUTH_CLIENT_ID;
 var init_usage_api = __esm({
   "src/hud/usage-api.ts"() {
     "use strict";
@@ -35358,7 +35435,7 @@ var init_usage_api = __esm({
     import_path104 = require("path");
     import_child_process28 = require("child_process");
     import_crypto15 = require("crypto");
-    import_os18 = require("os");
+    import_os19 = require("os");
     import_https3 = __toESM(require("https"), 1);
     init_ssrf_guard();
     init_types2();
@@ -37400,6 +37477,47 @@ function getGitBranch(cwd2) {
   branchCache.set(key, { value: result, expiresAt: Date.now() + CACHE_TTL_MS3 });
   return result;
 }
+function getWorktreeInfo(cwd2) {
+  const key = cwd2 ? (0, import_node_path12.resolve)(cwd2) : process.cwd();
+  const cached2 = worktreeCache.get(key);
+  if (cached2 && Date.now() < cached2.expiresAt) {
+    return cached2.value;
+  }
+  const execOpts = {
+    cwd: cwd2,
+    encoding: "utf-8",
+    timeout: 1e3,
+    stdio: ["pipe", "pipe", "pipe"],
+    shell: process.platform === "win32" ? "cmd.exe" : void 0
+  };
+  let result = { isWorktree: false, baseBranch: null };
+  try {
+    const gitDir = (0, import_node_child_process6.execSync)("git rev-parse --git-dir", execOpts).trim();
+    const gitCommonDir = (0, import_node_child_process6.execSync)("git rev-parse --git-common-dir", execOpts).trim();
+    let resolvedGitDir = (0, import_node_path12.resolve)(key, gitDir);
+    let resolvedCommonDir = (0, import_node_path12.resolve)(key, gitCommonDir);
+    try {
+      resolvedGitDir = (0, import_node_fs7.realpathSync)(resolvedGitDir);
+    } catch {
+    }
+    try {
+      resolvedCommonDir = (0, import_node_fs7.realpathSync)(resolvedCommonDir);
+    } catch {
+    }
+    if (resolvedGitDir !== resolvedCommonDir) {
+      result = { isWorktree: true, baseBranch: null };
+      try {
+        const headContent = (0, import_node_fs7.readFileSync)((0, import_node_path12.join)(resolvedCommonDir, "HEAD"), "utf-8").trim();
+        const match = headContent.match(/^ref: refs\/heads\/(.+)$/);
+        result.baseBranch = match ? match[1] : null;
+      } catch {
+      }
+    }
+  } catch {
+  }
+  worktreeCache.set(key, { value: result, expiresAt: Date.now() + CACHE_TTL_MS3 });
+  return result;
+}
 function renderGitRepo(cwd2) {
   const repo = getGitRepoName(cwd2);
   if (!repo) return null;
@@ -37408,18 +37526,24 @@ function renderGitRepo(cwd2) {
 function renderGitBranch(cwd2) {
   const branch = getGitBranch(cwd2);
   if (!branch) return null;
+  const wtInfo = getWorktreeInfo(cwd2);
+  if (wtInfo.isWorktree && wtInfo.baseBranch) {
+    return `${dim("branch:")}${cyan(branch)} ${dim("(wt:")}${cyan(wtInfo.baseBranch)}${dim(")")}`;
+  }
   return `${dim("branch:")}${cyan(branch)}`;
 }
-var import_node_child_process6, import_node_path12, CACHE_TTL_MS3, repoCache, branchCache;
+var import_node_child_process6, import_node_fs7, import_node_path12, CACHE_TTL_MS3, repoCache, branchCache, worktreeCache;
 var init_git = __esm({
   "src/hud/elements/git.ts"() {
     "use strict";
     import_node_child_process6 = require("node:child_process");
+    import_node_fs7 = require("node:fs");
     import_node_path12 = require("node:path");
     init_colors();
     CACHE_TTL_MS3 = 3e4;
     repoCache = /* @__PURE__ */ new Map();
     branchCache = /* @__PURE__ */ new Map();
+    worktreeCache = /* @__PURE__ */ new Map();
   }
 });
 
@@ -37659,48 +37783,48 @@ function limitOutputLines(lines, maxLines) {
   return [...lines.slice(0, limit - 1), `... (+${truncatedCount} lines)`];
 }
 async function render(context, config2) {
-  const elements = [];
-  const detailLines = [];
   const { elements: enabledElements } = config2;
-  const gitElements = [];
+  const rendered = /* @__PURE__ */ new Map();
+  const renderedDetail = /* @__PURE__ */ new Map();
   if (enabledElements.cwd) {
     const cwdElement = renderCwd(
       context.cwd,
       enabledElements.cwdFormat || "relative",
       enabledElements.useHyperlinks ?? false
     );
-    if (cwdElement) gitElements.push(cwdElement);
+    if (cwdElement) rendered.set("cwd", cwdElement);
   }
   if (enabledElements.gitRepo) {
     const gitRepoElement = renderGitRepo(context.cwd);
-    if (gitRepoElement) gitElements.push(gitRepoElement);
+    if (gitRepoElement) rendered.set("gitRepo", gitRepoElement);
   }
   if (enabledElements.gitBranch) {
     const gitBranchElement = renderGitBranch(context.cwd);
-    if (gitBranchElement) gitElements.push(gitBranchElement);
+    if (gitBranchElement) rendered.set("gitBranch", gitBranchElement);
   }
   if (enabledElements.model && context.modelName) {
     const modelElement = renderModel(
       context.modelName,
       enabledElements.modelFormat
     );
-    if (modelElement) gitElements.push(modelElement);
+    if (modelElement) rendered.set("model", modelElement);
   }
   if (enabledElements.apiKeySource && context.apiKeySource) {
     const keySource = renderApiKeySource(context.apiKeySource);
-    if (keySource) gitElements.push(keySource);
+    if (keySource) rendered.set("apiKeySource", keySource);
   }
   if (enabledElements.profile && context.profileName) {
-    gitElements.push(bold(`profile:${context.profileName}`));
+    rendered.set("profile", bold(`profile:${context.profileName}`));
   }
   if (enabledElements.omcLabel) {
     const versionTag = context.omcVersion ? `#${context.omcVersion}` : "";
     if (context.updateAvailable) {
-      elements.push(
+      rendered.set(
+        "omcLabel",
         bold(`[OMC${versionTag}] -> ${context.updateAvailable} omc update`)
       );
     } else {
-      elements.push(bold(`[OMC${versionTag}]`));
+      rendered.set("omcLabel", bold(`[OMC${versionTag}]`));
     }
   }
   if (enabledElements.rateLimits && context.rateLimitsResult) {
@@ -37711,37 +37835,37 @@ async function render(context, config2) {
         void 0,
         stale
       ) : renderRateLimits(context.rateLimitsResult.rateLimits, stale);
-      if (limits) elements.push(limits);
+      if (limits) rendered.set("rateLimits", limits);
     } else {
       const errorIndicator = renderRateLimitsError(context.rateLimitsResult);
-      if (errorIndicator) elements.push(errorIndicator);
+      if (errorIndicator) rendered.set("rateLimits", errorIndicator);
     }
   }
   if (context.customBuckets) {
     const thresholdPercent = config2.rateLimitsProvider?.resetsAtDisplayThresholdPercent;
     const custom3 = renderCustomBuckets(context.customBuckets, thresholdPercent);
-    if (custom3) elements.push(custom3);
+    if (custom3) rendered.set("customBuckets", custom3);
   }
   if (enabledElements.permissionStatus && context.pendingPermission) {
     const permission = renderPermission(context.pendingPermission);
-    if (permission) elements.push(permission);
+    if (permission) rendered.set("permission", permission);
   }
   if (enabledElements.thinking && context.thinkingState) {
     const thinking = renderThinking(
       context.thinkingState,
       enabledElements.thinkingFormat
     );
-    if (thinking) elements.push(thinking);
+    if (thinking) rendered.set("thinking", thinking);
   }
   if (enabledElements.promptTime) {
     const prompt = renderPromptTime(context.promptTime, /* @__PURE__ */ new Date());
-    if (prompt) elements.push(prompt);
+    if (prompt) rendered.set("promptTime", prompt);
   }
   if (enabledElements.sessionHealth && context.sessionHealth) {
-    const showDuration = enabledElements.showSessionDuration;
+    const showDuration = enabledElements.showSessionDuration ?? true;
     if (showDuration) {
       const session = renderSession(context.sessionHealth);
-      if (session) elements.push(session);
+      if (session) rendered.set("session", session);
     }
   }
   if (enabledElements.showTokens === true) {
@@ -37749,19 +37873,19 @@ async function render(context, config2) {
       context.lastRequestTokenUsage,
       context.sessionTotalTokens
     );
-    if (tokenUsage) elements.push(tokenUsage);
+    if (tokenUsage) rendered.set("tokens", tokenUsage);
   }
   if (enabledElements.ralph && context.ralph) {
     const ralph = renderRalph(context.ralph, config2.thresholds);
-    if (ralph) elements.push(ralph);
+    if (ralph) rendered.set("ralph", ralph);
   }
   if (enabledElements.autopilot && context.autopilot) {
     const autopilot = renderAutopilot(context.autopilot, config2.thresholds);
-    if (autopilot) elements.push(autopilot);
+    if (autopilot) rendered.set("autopilot", autopilot);
   }
   if (enabledElements.prdStory && context.prd) {
     const prd = renderPrd(context.prd);
-    if (prd) elements.push(prd);
+    if (prd) rendered.set("prd", prd);
   }
   if (enabledElements.activeSkills) {
     const skills = renderSkills(
@@ -37769,11 +37893,11 @@ async function render(context, config2) {
       context.ralph,
       enabledElements.lastSkill ?? true ? context.lastSkill : null
     );
-    if (skills) elements.push(skills);
+    if (skills) rendered.set("skills", skills);
   }
   if ((enabledElements.lastSkill ?? true) && !enabledElements.activeSkills) {
     const lastSkillElement = renderLastSkill(context.lastSkill);
-    if (lastSkillElement) elements.push(lastSkillElement);
+    if (lastSkillElement) rendered.set("lastSkill", lastSkillElement);
   }
   if (enabledElements.contextBar) {
     const ctx = enabledElements.useBars ? renderContextWithBar(
@@ -37786,23 +37910,25 @@ async function render(context, config2) {
       config2.thresholds,
       context.contextDisplayScope
     );
-    if (ctx) elements.push(ctx);
+    if (ctx) rendered.set("contextBar", ctx);
   }
   if (enabledElements.agents) {
     const format = enabledElements.agentsFormat || "codes";
     if (format === "multiline") {
       const maxLines = enabledElements.agentsMaxLines || 5;
       const result = renderAgentsMultiLine(context.activeAgents, maxLines);
-      if (result.headerPart) elements.push(result.headerPart);
-      detailLines.push(...result.detailLines);
+      if (result.headerPart) rendered.set("agents", result.headerPart);
+      if (result.detailLines.length > 0) {
+        renderedDetail.set("agents", result.detailLines);
+      }
     } else {
       const agents = renderAgentsByFormat(context.activeAgents, format);
-      if (agents) elements.push(agents);
+      if (agents) rendered.set("agents", agents);
     }
   }
   if (enabledElements.backgroundTasks) {
     const bg = renderBackground(context.backgroundTasks);
-    if (bg) elements.push(bg);
+    if (bg) rendered.set("background", bg);
   }
   const showCounts = enabledElements.showCallCounts ?? true;
   if (showCounts) {
@@ -37811,22 +37937,64 @@ async function render(context, config2) {
       context.agentCallCount,
       context.skillCallCount
     );
-    if (counts) elements.push(counts);
+    if (counts) rendered.set("callCounts", counts);
   }
   if (enabledElements.showLastTool === true) {
     const tool2 = renderLastTool(context.lastToolName ?? null);
-    if (tool2) elements.push(tool2);
+    if (tool2) rendered.set("lastTool", tool2);
   }
   if (enabledElements.sessionSummary && context.sessionSummary) {
     const summary = renderSessionSummary(context.sessionSummary);
-    if (summary) elements.push(summary);
+    if (summary) rendered.set("sessionSummary", summary);
+  }
+  if (context.missionBoard && (config2.missionBoard?.enabled ?? config2.elements.missionBoard ?? false)) {
+    const mbLines = renderMissionBoard(context.missionBoard, config2.missionBoard);
+    if (mbLines.length > 0) renderedDetail.set("missionBoard", mbLines);
   }
   const ctxWarning = renderContextLimitWarning(
     context.contextPercent,
     config2.contextLimitWarning.threshold,
     config2.contextLimitWarning.autoCompact
   );
-  if (ctxWarning) detailLines.push(ctxWarning);
+  if (ctxWarning) renderedDetail.set("contextWarning", [ctxWarning]);
+  if (enabledElements.todos) {
+    const todos = renderTodosWithCurrent(context.todos);
+    if (todos) renderedDetail.set("todos", [todos]);
+  }
+  const safeArray = (v, fallback) => Array.isArray(v) ? v : fallback;
+  const effectiveLayout = {
+    line1: safeArray(config2.layout?.line1, DEFAULT_ELEMENT_ORDER.line1),
+    main: safeArray(config2.layout?.main, DEFAULT_ELEMENT_ORDER.main),
+    detail: safeArray(config2.layout?.detail, DEFAULT_ELEMENT_ORDER.detail)
+  };
+  function collectInline(order) {
+    const result = [];
+    for (const name of order) {
+      const el = rendered.get(name);
+      if (el) {
+        result.push(el);
+      } else {
+        const lines = renderedDetail.get(name);
+        if (lines && lines.length > 0) result.push(lines.join(" "));
+      }
+    }
+    return result;
+  }
+  function collectDetailLines(order) {
+    const result = [];
+    for (const name of order) {
+      const lines = renderedDetail.get(name);
+      if (lines) result.push(...lines);
+      if (!lines) {
+        const inline = rendered.get(name);
+        if (inline) result.push(inline);
+      }
+    }
+    return result;
+  }
+  const gitElements = collectInline(effectiveLayout.line1);
+  const elements = collectInline(effectiveLayout.main);
+  const detailLines = collectDetailLines(effectiveLayout.detail);
   const outputLines = [];
   const gitInfoLine = gitElements.length > 0 ? gitElements.join(dim(PLAIN_SEPARATOR)) : null;
   const headerLine = elements.length > 0 ? elements.join(dim(PLAIN_SEPARATOR)) : null;
@@ -37845,15 +38013,6 @@ async function render(context, config2) {
     if (gitInfoLine) {
       outputLines.push(gitInfoLine);
     }
-  }
-  if (enabledElements.todos) {
-    const todos = renderTodosWithCurrent(context.todos);
-    if (todos) detailLines.push(todos);
-  }
-  if (context.missionBoard && (config2.missionBoard?.enabled ?? config2.elements.missionBoard ?? false)) {
-    detailLines.unshift(
-      ...renderMissionBoard(context.missionBoard, config2.missionBoard)
-    );
   }
   const widthAdjustedLines = applyMaxWidthByMode(
     [...outputLines, ...detailLines],
@@ -38100,7 +38259,7 @@ async function main2(watchMode = false, skipInit = false) {
       }
     }
     try {
-      const updateCacheFile = (0, import_path120.join)((0, import_os22.homedir)(), ".omc", "update-check.json");
+      const updateCacheFile = (0, import_path120.join)((0, import_os23.homedir)(), ".omc", "update-check.json");
       await (0, import_promises21.access)(updateCacheFile);
       const content = await (0, import_promises21.readFile)(updateCacheFile, "utf-8");
       const cached2 = JSON.parse(content);
@@ -38218,7 +38377,7 @@ async function main2(watchMode = false, skipInit = false) {
     }
   }
 }
-var import_fs103, import_promises21, import_path120, import_os22, import_child_process44, import_url16, lastSummarySpawnTimestamp, summaryProcessPid;
+var import_fs103, import_promises21, import_path120, import_os23, import_child_process44, import_url16, lastSummarySpawnTimestamp, summaryProcessPid;
 var init_hud = __esm({
   "src/hud/index.ts"() {
     "use strict";
@@ -38238,7 +38397,7 @@ var init_hud = __esm({
     import_fs103 = require("fs");
     import_promises21 = require("fs/promises");
     import_path120 = require("path");
-    import_os22 = require("os");
+    import_os23 = require("os");
     import_child_process44 = require("child_process");
     import_url16 = require("url");
     init_worktree_paths();
@@ -38248,7 +38407,7 @@ var init_hud = __esm({
   }
 });
 
-// node_modules/commander/esm.mjs
+// ../oh-my-claudecode/node_modules/commander/esm.mjs
 var import_index = __toESM(require_commander(), 1);
 var {
   program,
@@ -38265,7 +38424,7 @@ var {
   Help
 } = import_index.default;
 
-// node_modules/chalk/source/vendor/ansi-styles/index.js
+// ../oh-my-claudecode/node_modules/chalk/source/vendor/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET = 10;
 var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi256 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -38451,7 +38610,7 @@ function assembleStyles() {
 var ansiStyles = assembleStyles();
 var ansi_styles_default = ansiStyles;
 
-// node_modules/chalk/source/vendor/supports-color/index.js
+// ../oh-my-claudecode/node_modules/chalk/source/vendor/supports-color/index.js
 var import_node_process = __toESM(require("node:process"), 1);
 var import_node_os = __toESM(require("node:os"), 1);
 var import_node_tty = __toESM(require("node:tty"), 1);
@@ -38583,7 +38742,7 @@ var supportsColor = {
 };
 var supports_color_default = supportsColor;
 
-// node_modules/chalk/source/utilities.js
+// ../oh-my-claudecode/node_modules/chalk/source/utilities.js
 function stringReplaceAll(string3, substring, replacer) {
   let index = string3.indexOf(substring);
   if (index === -1) {
@@ -38613,7 +38772,7 @@ function stringEncaseCRLFWithFirstIndex(string3, prefix, postfix, index) {
   return returnValue;
 }
 
-// node_modules/chalk/source/index.js
+// ../oh-my-claudecode/node_modules/chalk/source/index.js
 var { stdout: stdoutColor, stderr: stderrColor } = supports_color_default;
 var GENERATOR = /* @__PURE__ */ Symbol("GENERATOR");
 var STYLER = /* @__PURE__ */ Symbol("STYLER");
@@ -38820,7 +38979,7 @@ function toSdkMcpFormat(servers) {
   return result;
 }
 
-// node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs
+// ../oh-my-claudecode/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs
 var import_path4 = require("path");
 var import_url2 = require("url");
 var import_events = require("events");
@@ -58439,7 +58598,7 @@ function createSdkMcpServer(options) {
   };
 }
 
-// node_modules/zod/v3/external.js
+// ../oh-my-claudecode/node_modules/zod/v3/external.js
 var external_exports = {};
 __export(external_exports, {
   BRAND: () => BRAND,
@@ -58551,7 +58710,7 @@ __export(external_exports, {
   void: () => voidType2
 });
 
-// node_modules/zod/v3/helpers/util.js
+// ../oh-my-claudecode/node_modules/zod/v3/helpers/util.js
 var util2;
 (function(util3) {
   util3.assertEqual = (_) => {
@@ -58685,7 +58844,7 @@ var getParsedType3 = (data) => {
   }
 };
 
-// node_modules/zod/v3/ZodError.js
+// ../oh-my-claudecode/node_modules/zod/v3/ZodError.js
 var ZodIssueCode2 = util2.arrayToEnum([
   "invalid_type",
   "invalid_literal",
@@ -58803,7 +58962,7 @@ ZodError3.create = (issues) => {
   return error2;
 };
 
-// node_modules/zod/v3/locales/en.js
+// ../oh-my-claudecode/node_modules/zod/v3/locales/en.js
 var errorMap2 = (issue2, _ctx) => {
   let message;
   switch (issue2.code) {
@@ -58906,7 +59065,7 @@ var errorMap2 = (issue2, _ctx) => {
 };
 var en_default3 = errorMap2;
 
-// node_modules/zod/v3/errors.js
+// ../oh-my-claudecode/node_modules/zod/v3/errors.js
 var overrideErrorMap2 = en_default3;
 function setErrorMap(map) {
   overrideErrorMap2 = map;
@@ -58915,7 +59074,7 @@ function getErrorMap2() {
   return overrideErrorMap2;
 }
 
-// node_modules/zod/v3/helpers/parseUtil.js
+// ../oh-my-claudecode/node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue2 = (params) => {
   const { data, path: path22, errorMaps, issueData } = params;
   const fullPath = [...path22, ...issueData.path || []];
@@ -59025,14 +59184,14 @@ var isDirty2 = (x) => x.status === "dirty";
 var isValid2 = (x) => x.status === "valid";
 var isAsync2 = (x) => typeof Promise !== "undefined" && x instanceof Promise;
 
-// node_modules/zod/v3/helpers/errorUtil.js
+// ../oh-my-claudecode/node_modules/zod/v3/helpers/errorUtil.js
 var errorUtil2;
 (function(errorUtil3) {
   errorUtil3.errToObj = (message) => typeof message === "string" ? { message } : message || {};
   errorUtil3.toString = (message) => typeof message === "string" ? message : message?.message;
 })(errorUtil2 || (errorUtil2 = {}));
 
-// node_modules/zod/v3/types.js
+// ../oh-my-claudecode/node_modules/zod/v3/types.js
 var ParseInputLazyPath2 = class {
   constructor(parent, value, path22, key) {
     this._cachedPath = [];
@@ -66572,6 +66731,28 @@ var stateClearTool = {
           }]
         };
       }
+      {
+        const now = Date.now();
+        const cancelSignalPayload = {
+          active: true,
+          requested_at: new Date(now).toISOString(),
+          expires_at: new Date(now + CANCEL_SIGNAL_TTL_MS).toISOString(),
+          mode,
+          source: "state_clear"
+        };
+        const legacySignalPath = (0, import_path25.join)(root2, "state", "cancel-signal-state.json");
+        try {
+          atomicWriteJsonSync(legacySignalPath, cancelSignalPayload);
+        } catch {
+        }
+        for (const sid of listSessionIds(root2)) {
+          try {
+            const sessionSignalPath = resolveSessionStatePath("cancel-signal", sid, root2);
+            atomicWriteJsonSync(sessionSignalPath, cancelSignalPayload);
+          } catch {
+          }
+        }
+      }
       let clearedCount = 0;
       const errors = [];
       if (mode === "team") {
@@ -72360,7 +72541,7 @@ function normalizeHeading(value) {
 function dedupe(values) {
   return [...new Set(values)];
 }
-function normalizePath(value) {
+function normalizePath3(value) {
   return value.trim().replace(/^[("'`]+|[)"'`]+$/g, "");
 }
 function isLikelyPath(value) {
@@ -72440,7 +72621,7 @@ function extractRequiredToolCalls(content) {
 function extractFilePaths(content) {
   const paths = [];
   for (const match of content.matchAll(FILE_PATH_PATTERN)) {
-    const candidate = normalizePath(match[1] ?? "");
+    const candidate = normalizePath3(match[1] ?? "");
     if (isLikelyPath(candidate)) {
       paths.push(candidate);
     }
@@ -72543,7 +72724,7 @@ function recordPromptPrerequisiteProgress(directory, sessionId, toolName, toolIn
   const readPath = extractReadFilePath(toolName, toolInput);
   if (readPath) {
     for (const requiredPath of state.required_file_paths) {
-      if (!state.completed_file_paths.includes(requiredPath) && normalizePath(readPath) === requiredPath) {
+      if (!state.completed_file_paths.includes(requiredPath) && normalizePath3(readPath) === requiredPath) {
         state.completed_file_paths = dedupe([...state.completed_file_paths, requiredPath]);
         fileSatisfied = requiredPath;
       }
@@ -74256,7 +74437,7 @@ var ALREADY_HIGH = new Set(Object.values(HIGH_VARIANT_MAP));
 
 // src/hooks/rules-injector/index.ts
 var import_fs73 = require("fs");
-var import_os12 = require("os");
+var import_os13 = require("os");
 var import_path90 = require("path");
 
 // src/hooks/rules-injector/matcher.ts
@@ -74645,9 +74826,9 @@ var CLAUDE_CONFIG_DIR3 = getClaudeConfigDir();
 // src/hooks/comment-checker/index.ts
 var fs13 = __toESM(require("fs"), 1);
 var path17 = __toESM(require("path"), 1);
-var import_os13 = require("os");
+var import_os14 = require("os");
 var DEBUG2 = process.env.COMMENT_CHECKER_DEBUG === "1";
-var DEBUG_FILE = path17.join((0, import_os13.tmpdir)(), "comment-checker-debug.log");
+var DEBUG_FILE = path17.join((0, import_os14.tmpdir)(), "comment-checker-debug.log");
 
 // src/hooks/recovery/context-window.ts
 var fs14 = __toESM(require("fs"), 1);
@@ -74668,14 +74849,14 @@ var DEBUG_FILE2 = (0, import_node_path7.join)((0, import_node_os3.tmpdir)(), "re
 // src/hooks/preemptive-compaction/index.ts
 var fs15 = __toESM(require("fs"), 1);
 var path18 = __toESM(require("path"), 1);
-var import_os14 = require("os");
+var import_os15 = require("os");
 
 // src/hooks/preemptive-compaction/constants.ts
 var CLAUDE_DEFAULT_CONTEXT_LIMIT = process.env.ANTHROPIC_1M_CONTEXT === "true" || process.env.VERTEX_ANTHROPIC_1M_CONTEXT === "true" ? 1e6 : 2e5;
 
 // src/hooks/preemptive-compaction/index.ts
 var DEBUG4 = process.env.PREEMPTIVE_COMPACTION_DEBUG === "1";
-var DEBUG_FILE3 = path18.join((0, import_os14.tmpdir)(), "preemptive-compaction-debug.log");
+var DEBUG_FILE3 = path18.join((0, import_os15.tmpdir)(), "preemptive-compaction-debug.log");
 
 // src/features/background-agent/manager.ts
 var import_fs78 = require("fs");
@@ -74696,9 +74877,9 @@ var README_INJECTOR_STORAGE = (0, import_node_path8.join)(
 // src/hooks/empty-message-sanitizer/index.ts
 var fs16 = __toESM(require("fs"), 1);
 var path19 = __toESM(require("path"), 1);
-var import_os15 = require("os");
+var import_os16 = require("os");
 var DEBUG5 = process.env.EMPTY_MESSAGE_SANITIZER_DEBUG === "1";
-var DEBUG_FILE4 = path19.join((0, import_os15.tmpdir)(), "empty-message-sanitizer-debug.log");
+var DEBUG_FILE4 = path19.join((0, import_os16.tmpdir)(), "empty-message-sanitizer-debug.log");
 
 // src/hooks/non-interactive-env/constants.ts
 var SHELL_COMMAND_PATTERNS = {
@@ -74763,8 +74944,8 @@ var import_path97 = require("path");
 
 // src/hooks/agent-usage-reminder/constants.ts
 var import_path96 = require("path");
-var import_os16 = require("os");
-var OMC_STORAGE_DIR3 = (0, import_path96.join)((0, import_os16.homedir)(), ".omc");
+var import_os17 = require("os");
+var OMC_STORAGE_DIR3 = (0, import_path96.join)((0, import_os17.homedir)(), ".omc");
 var AGENT_USAGE_REMINDER_STORAGE = (0, import_path96.join)(
   OMC_STORAGE_DIR3,
   "agent-usage-reminder"
@@ -74816,7 +74997,7 @@ init_ralph();
 // src/hooks/learner/auto-invoke.ts
 var import_fs83 = __toESM(require("fs"), 1);
 var import_path101 = __toESM(require("path"), 1);
-var import_os17 = __toESM(require("os"), 1);
+var import_os18 = __toESM(require("os"), 1);
 init_paths();
 init_atomic_write();
 
@@ -78464,7 +78645,7 @@ function sleep5(ms) {
 // src/cli/commands/teleport.ts
 var import_child_process32 = require("child_process");
 var import_fs91 = require("fs");
-var import_os19 = require("os");
+var import_os20 = require("os");
 var import_path108 = require("path");
 init_loader();
 
@@ -79043,7 +79224,7 @@ function getProvider(name) {
 }
 
 // src/cli/commands/teleport.ts
-var DEFAULT_WORKTREE_ROOT = (0, import_path108.join)((0, import_os19.homedir)(), "Workspace", "omc-worktrees");
+var DEFAULT_WORKTREE_ROOT = (0, import_path108.join)((0, import_os20.homedir)(), "Workspace", "omc-worktrees");
 var PACKAGE_JSON_NAME = "package.json";
 var PACKAGE_MANAGER_LOCKFILES = {
   pnpm: "pnpm-lock.yaml",
@@ -79658,16 +79839,16 @@ function sanitizeTmuxToken(value) {
   return cleaned || "unknown";
 }
 function buildTmuxShellCommand(command, args) {
-  return [quoteShellArg(command), ...args.map(quoteShellArg)].join(" ");
+  return [quoteShellArg2(command), ...args.map(quoteShellArg2)].join(" ");
 }
 function wrapWithLoginShell(command) {
   const shell = process.env.SHELL || "/bin/bash";
   const shellName = (0, import_path109.basename)(shell).replace(/\.(exe|cmd|bat)$/i, "");
   const rcFile = process.env.HOME ? `${process.env.HOME}/.${shellName}rc` : "";
-  const sourcePrefix = rcFile ? `[ -f ${quoteShellArg(rcFile)} ] && . ${quoteShellArg(rcFile)}; ` : "";
-  return `exec ${quoteShellArg(shell)} -lc ${quoteShellArg(`${sourcePrefix}${command}`)}`;
+  const sourcePrefix = rcFile ? `[ -f ${quoteShellArg2(rcFile)} ] && . ${quoteShellArg2(rcFile)}; ` : "";
+  return `exec ${quoteShellArg2(shell)} -lc ${quoteShellArg2(`${sourcePrefix}${command}`)}`;
 }
-function quoteShellArg(value) {
+function quoteShellArg2(value) {
   return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
 
@@ -80074,7 +80255,7 @@ function interopCommand(options = {}) {
 var import_child_process36 = require("child_process");
 var import_fs92 = require("fs");
 var import_promises15 = require("fs/promises");
-var import_os20 = require("os");
+var import_os21 = require("os");
 var import_path110 = require("path");
 var import_url15 = require("url");
 var ASK_USAGE = [
@@ -80222,7 +80403,7 @@ function resolveAskAdvisorScriptPath(packageRoot = getPackageRoot(), env2 = proc
 }
 function resolveSignalExitCode(signal) {
   if (!signal) return 1;
-  const signalNumber = import_os20.constants.signals[signal];
+  const signalNumber = import_os21.constants.signals[signal];
   if (typeof signalNumber === "number" && Number.isFinite(signalNumber)) {
     return 128 + signalNumber;
   }
@@ -81500,7 +81681,7 @@ var import_child_process41 = require("child_process");
 var import_fs96 = require("fs");
 var import_promises19 = require("fs/promises");
 var import_path114 = require("path");
-var import_os21 = require("os");
+var import_os22 = require("os");
 var import_promises20 = require("readline/promises");
 
 // src/cli/autoresearch-intake.ts
@@ -81877,7 +82058,7 @@ function ensureSymlink(target, linkPath) {
   (0, import_fs96.symlinkSync)(target, linkPath, "dir");
 }
 function prepareAutoresearchSetupCodexHome(repoRoot, sessionName2) {
-  const baseCodexHome = process.env.CODEX_HOME?.trim() || (0, import_path114.join)((0, import_os21.homedir)(), ".codex");
+  const baseCodexHome = process.env.CODEX_HOME?.trim() || (0, import_path114.join)((0, import_os22.homedir)(), ".codex");
   const tempCodexHome = (0, import_path114.join)(repoRoot, ".omx", "tmp", sessionName2, "codex-home");
   (0, import_fs96.mkdirSync)(tempCodexHome, { recursive: true });
   for (const dirName of ["skills", "commands"]) {
@@ -81918,7 +82099,7 @@ function spawnAutoresearchSetupTmux(repoRoot) {
   console.log("\nAutoresearch setup launched in background Claude session.");
   console.log(`  Session:  ${sessionName2}`);
   console.log(`  Starter:  ${buildAutoresearchSetupSlashCommand()}`);
-  console.log(`  CODEX_HOME: ${quoteShellArg(codexHome)}`);
+  console.log(`  CODEX_HOME: ${quoteShellArg2(codexHome)}`);
   console.log(`  Attach:   tmux attach -t ${sessionName2}`);
 }
 

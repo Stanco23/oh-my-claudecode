@@ -83,6 +83,7 @@ const SKILL_PROTECTION = {
     ccg: 'medium',
     // === Heavy protection (long-running, 10 reinforcements) ===
     deepinit: 'heavy',
+    'self-improve': 'heavy',
 };
 // ---------------------------------------------------------------------------
 // Public API

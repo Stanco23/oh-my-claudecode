@@ -21,8 +21,10 @@ const DEFAULTS = {
     restrictToolPaths: false,
     pythonSandbox: false,
     disableProjectSkills: false,
-    disableAutoUpdate: true,
+    disableAutoUpdate: false,
     hardMaxIterations: 500,
+    disableRemoteMcp: false,
+    disableExternalLLM: false,
 };
 const STRICT_OVERRIDES = {
     restrictToolPaths: true,
@@ -30,6 +32,8 @@ const STRICT_OVERRIDES = {
     disableProjectSkills: true,
     disableAutoUpdate: true,
     hardMaxIterations: 200,
+    disableRemoteMcp: true,
+    disableExternalLLM: true,
 };
 /** Cached config to avoid re-reading files on every call */
 let cachedConfig = null;
@@ -68,13 +72,29 @@ export function getSecurityConfig() {
     const isStrict = process.env.OMC_SECURITY === "strict";
     const base = isStrict ? { ...STRICT_OVERRIDES } : { ...DEFAULTS };
     const fileOverrides = loadSecurityFromConfigFiles();
-    cachedConfig = {
-        restrictToolPaths: fileOverrides.restrictToolPaths ?? base.restrictToolPaths,
-        pythonSandbox: fileOverrides.pythonSandbox ?? base.pythonSandbox,
-        disableProjectSkills: fileOverrides.disableProjectSkills ?? base.disableProjectSkills,
-        disableAutoUpdate: fileOverrides.disableAutoUpdate ?? base.disableAutoUpdate,
-        hardMaxIterations: fileOverrides.hardMaxIterations ?? base.hardMaxIterations,
-    };
+    if (isStrict) {
+        // In strict mode, config file can only TIGHTEN security, not relax it
+        cachedConfig = {
+            restrictToolPaths: base.restrictToolPaths || (fileOverrides.restrictToolPaths ?? false),
+            pythonSandbox: base.pythonSandbox || (fileOverrides.pythonSandbox ?? false),
+            disableProjectSkills: base.disableProjectSkills || (fileOverrides.disableProjectSkills ?? false),
+            disableAutoUpdate: base.disableAutoUpdate || (fileOverrides.disableAutoUpdate ?? false),
+            disableRemoteMcp: base.disableRemoteMcp || (fileOverrides.disableRemoteMcp ?? false),
+            disableExternalLLM: base.disableExternalLLM || (fileOverrides.disableExternalLLM ?? false),
+            hardMaxIterations: Math.min(base.hardMaxIterations, fileOverrides.hardMaxIterations ?? base.hardMaxIterations),
+        };
+    }
+    else {
+        cachedConfig = {
+            restrictToolPaths: fileOverrides.restrictToolPaths ?? base.restrictToolPaths,
+            pythonSandbox: fileOverrides.pythonSandbox ?? base.pythonSandbox,
+            disableProjectSkills: fileOverrides.disableProjectSkills ?? base.disableProjectSkills,
+            disableAutoUpdate: fileOverrides.disableAutoUpdate ?? base.disableAutoUpdate,
+            disableRemoteMcp: fileOverrides.disableRemoteMcp ?? base.disableRemoteMcp,
+            disableExternalLLM: fileOverrides.disableExternalLLM ?? base.disableExternalLLM,
+            hardMaxIterations: fileOverrides.hardMaxIterations ?? base.hardMaxIterations,
+        };
+    }
     return cachedConfig;
 }
 /** Clear cached config (for testing) */
@@ -100,5 +120,13 @@ export function isAutoUpdateDisabled() {
 /** Convenience: get hard max iterations (0 = unlimited) */
 export function getHardMaxIterations() {
     return getSecurityConfig().hardMaxIterations;
+}
+/** Convenience: are remote MCP servers disabled? */
+export function isRemoteMcpDisabled() {
+    return getSecurityConfig().disableRemoteMcp;
+}
+/** Convenience: are external LLM providers disabled? */
+export function isExternalLLMDisabled() {
+    return getSecurityConfig().disableExternalLLM;
 }
 //# sourceMappingURL=security-config.js.map

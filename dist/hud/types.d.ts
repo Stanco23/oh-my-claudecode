@@ -370,6 +370,25 @@ export interface ContextLimitWarningConfig {
     /** Automatically queue /compact when threshold is exceeded (default: false) */
     autoCompact: boolean;
 }
+/**
+ * Layout configuration for HUD element ordering.
+ * Each group is an ordered array of element names.
+ * Elements can be moved between groups (e.g., contextBar from main to line1).
+ * Presets control on/off; layout controls order and placement.
+ */
+export interface LayoutConfig {
+    /** Elements on the git/info line (above or below main, per gitInfoPosition) */
+    line1?: string[];
+    /** Elements on the main statusline */
+    main?: string[];
+    /** Elements rendered as separate detail lines below the main line */
+    detail?: string[];
+}
+/**
+ * Default element order matching the current hardcoded order in render.ts.
+ * Used as fallback when no layout is configured.
+ */
+export declare const DEFAULT_ELEMENT_ORDER: Required<LayoutConfig>;
 export interface HudConfig {
     preset: HudPreset;
     elements: HudElementConfig;
@@ -386,6 +405,8 @@ export interface HudConfig {
     maxWidth?: number;
     /** Controls maxWidth behavior: truncate with ellipsis (default) or wrap at " | " HUD element boundaries. */
     wrapMode?: 'truncate' | 'wrap';
+    /** Optional element ordering. Overrides default order when set. Presets still control on/off. */
+    layout?: LayoutConfig;
 }
 export declare const DEFAULT_HUD_USAGE_POLL_INTERVAL_MS: number;
 export declare const DEFAULT_HUD_CONFIG: HudConfig;
