@@ -27,24 +27,23 @@ Direct writes OK for: `~/.claude/**`, `.omc/**`, `.claude/**`, `CLAUDE.md`, `AGE
 <agent_catalog>
 Prefix: `oh-my-claudecode:`. See `agents/*.md` for full prompts.
 
-explore (haiku), analyst (opus), planner (opus), architect (opus), debugger (sonnet), executor (sonnet), verifier (sonnet), tracer (sonnet), security-reviewer (sonnet), code-reviewer (opus), test-engineer (sonnet), designer (sonnet), writer (haiku), qa-tester (sonnet), scientist (sonnet), document-specialist (sonnet), git-master (sonnet), code-simplifier (opus), critic (opus)
+analyst (claude-opus-4-6/3), architect (claude-opus-4-6/3), code-reviewer (claude-opus-4-6/3), code-simplifier (claude-opus-4-6/3), critic (claude-opus-4-6/3), debugger (claude-sonnet-4-6/3), designer (claude-sonnet-4-6/2), document-specialist (claude-sonnet-4-6/2), executor (claude-sonnet-4-6/2), explore (claude-haiku-4-5/3), git-master (claude-sonnet-4-6/3), planner (claude-opus-4-6/4), qa-tester (claude-sonnet-4-6/3), scientist (claude-sonnet-4-6/3), security-reviewer (claude-opus-4-6/3), test-engineer (claude-sonnet-4-6/3), tracer (claude-sonnet-4-6/3), verifier (claude-sonnet-4-6/3), writer (claude-haiku-4-5/2)
 </agent_catalog>
 
 <tools>
-External AI: `/team N:executor "task"`, `omc team N:codex|gemini "..."`, `omc ask <claude|codex|gemini>`, `/ccg`
-OMC State: `state_read`, `state_write`, `state_clear`, `state_list_active`, `state_get_status`
-Teams: `TeamCreate`, `TeamDelete`, `SendMessage`, `TaskCreate`, `TaskList`, `TaskGet`, `TaskUpdate`
-Notepad: `notepad_read`, `notepad_write_priority`, `notepad_write_working`, `notepad_write_manual`
-Project Memory: `project_memory_read`, `project_memory_write`, `project_memory_add_note`, `project_memory_add_directive`
-Code Intel: LSP (`lsp_hover`, `lsp_goto_definition`, `lsp_find_references`, `lsp_diagnostics`, etc.), AST (`ast_grep_search`, `ast_grep_replace`), `python_repl`
+External AI: /team, omc ask, /ccg
+OMC State: state_read, state_write, state_clear, state_list_active, state_get_status
+Teams: TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskList, TaskGet, TaskUpdate
+Notepad: notepad_read, notepad_write_priority, notepad_write_working, notepad_write_manual
+Project Memory: project_memory_read, project_memory_write, project_memory_add_note, project_memory_add_directive
+Code Intel: LSP (lsp_hover, lsp_goto_definition, lsp_find_references, lsp_diagnostics, etc.), AST (ast_grep_search, ast_grep_replace), python_repl
+MCP Servers: t
 </tools>
 
 <skills>
-Invoke via `/oh-my-claudecode:<name>`. Trigger patterns auto-detect keywords.
-
-Workflow: `autopilot`, `ralph`, `ultrawork`, `team`, `ccg`, `ultraqa`, `omc-plan`, `ralplan`, `sciomc`, `external-context`, `deepinit`, `deep-interview`, `ai-slop-cleaner`, `self-improve`
-Keyword triggers: "autopilot"→autopilot, "ralph"→ralph, "ulw"→ultrawork, "ccg"→ccg, "ralplan"→ralplan, "deep interview"→deep-interview, "deslop"/"anti-slop"/cleanup+slop-smell→ai-slop-cleaner, "deep-analyze"→analysis mode, "tdd"→TDD mode, "deepsearch"→codebase search, "ultrathink"→deep reasoning, "cancelomc"→cancel. Team orchestration is explicit via `/team`.
-Utilities: `ask-codex`, `ask-gemini`, `cancel`, `note`, `learner`, `omc-setup`, `mcp-setup`, `hud`, `omc-doctor`, `omc-help`, `trace`, `release`, `project-session-manager`, `skill`, `writer-memory`, `ralph-init`, `configure-notifications`, `learn-about-omc` (`trace` is the evidence-driven tracing lane)
+Workflow: ai-slop-cleaner, autopilot, ccg, deep-interview, deepinit, external-context, omc-plan, ralph, ralplan, sciomc, self-improve, team, ultraqa, ultrawork
+Keyword triggers: ask, cancel, configure-notifications, hud, learner, mcp-setup, omc-doctor, omc-setup, project-session-manager, release, setup, skill, skillify, trace, writer-memory
+Utilities: adapt, debug, deep-dive, omc-reference, omc-teams, remember, verify, visual-verdict, wiki
 </skills>
 
 <team_pipeline>
@@ -95,7 +94,7 @@ Not-tested: Auth service cold-start latency >500ms
 </commit_protocol>
 
 <hooks_and_context>
-Hooks inject `<system-reminder>` tags. Key patterns: `hook success: Success` (proceed), `[MAGIC KEYWORD: ...]` (invoke skill), `The boulder never stops` (ralph/ultrawork active).
+Hooks inject <system-reminder> tags. Key patterns: .
 Persistence: `<remember>` (7 days), `<remember priority>` (permanent).
 Kill switches: `DISABLE_OMC`, `OMC_SKIP_HOOKS` (comma-separated).
 </hooks_and_context>

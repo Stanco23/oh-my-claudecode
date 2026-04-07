@@ -19,6 +19,7 @@ import type {
 } from './types.js';
 
 function getPackageDir(): string {
+  // Try __dirname path resolution first
   if (typeof __dirname !== 'undefined' && __dirname) {
     const currentDirName = basename(__dirname);
     const parentDirName = basename(dirname(__dirname));
@@ -33,17 +34,28 @@ function getPackageDir(): string {
       && parentDirName === 'features'
       && (grandparentDirName === 'src' || grandparentDirName === 'dist')
     ) {
-      return join(__dirname, '..', '..', '..');
+      const pkgDir = join(__dirname, '..', '..', '..');
+      // Verify skills directory exists at this path before returning
+      if (existsSync(join(pkgDir, 'skills'))) {
+        return pkgDir;
+      }
     }
   }
 
+  // Fallback: try import.meta.url resolution
   try {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    return join(__dirname, '..', '..', '..');
+    const pkgDir = join(__dirname, '..', '..', '..');
+    if (existsSync(join(pkgDir, 'skills'))) {
+      return pkgDir;
+    }
   } catch {
-    return process.cwd();
+    // fall through
   }
+
+  // Last resort: use cwd
+  return process.cwd();
 }
 
 function computeHash(name: string, description: string): string {

@@ -82311,16 +82311,22 @@ function getPackageDir6() {
       return (0, import_path115.join)(__dirname, "..");
     }
     if (currentDirName === "adapt" && parentDirName === "features" && (grandparentDirName === "src" || grandparentDirName === "dist")) {
-      return (0, import_path115.join)(__dirname, "..", "..", "..");
+      const pkgDir = (0, import_path115.join)(__dirname, "..", "..", "..");
+      if ((0, import_fs96.existsSync)((0, import_path115.join)(pkgDir, "skills"))) {
+        return pkgDir;
+      }
     }
   }
   try {
     const __filename4 = (0, import_url16.fileURLToPath)(importMetaUrl);
     const __dirname2 = (0, import_path115.dirname)(__filename4);
-    return (0, import_path115.join)(__dirname2, "..", "..", "..");
+    const pkgDir = (0, import_path115.join)(__dirname2, "..", "..", "..");
+    if ((0, import_fs96.existsSync)((0, import_path115.join)(pkgDir, "skills"))) {
+      return pkgDir;
+    }
   } catch {
-    return process.cwd();
   }
+  return process.cwd();
 }
 function computeHash(name, description) {
   const input = `${name}|${description.split("\n")[0].trim()}`;
@@ -82499,16 +82505,22 @@ function getPackageDir7() {
       return (0, import_path116.join)(__dirname, "..");
     }
     if (currentDirName === "adapt" && parentDirName === "features" && (grandparentDirName === "src" || grandparentDirName === "dist")) {
-      return (0, import_path116.join)(__dirname, "..", "..", "..");
+      const pkgDir = (0, import_path116.join)(__dirname, "..", "..", "..");
+      if ((0, import_fs97.existsSync)((0, import_path116.join)(pkgDir, "CLAUDE.md"))) {
+        return pkgDir;
+      }
     }
   }
   try {
     const __filename4 = (0, import_url17.fileURLToPath)(importMetaUrl);
     const __dirname2 = (0, import_path116.dirname)(__filename4);
-    return (0, import_path116.join)(__dirname2, "..", "..", "..");
+    const pkgDir = (0, import_path116.join)(__dirname2, "..", "..", "..");
+    if ((0, import_fs97.existsSync)((0, import_path116.join)(pkgDir, "CLAUDE.md"))) {
+      return pkgDir;
+    }
   } catch {
-    return process.cwd();
   }
+  return process.cwd();
 }
 function parseClaudeMd(claudeMdPath) {
   const skills = [];
@@ -82838,16 +82850,22 @@ function getPackageDir8() {
       return (0, import_path118.join)(__dirname, "..");
     }
     if (currentDirName === "adapt" && parentDirName === "features" && (grandparentDirName === "src" || grandparentDirName === "dist")) {
-      return (0, import_path118.join)(__dirname, "..", "..", "..");
+      const pkgDir = (0, import_path118.join)(__dirname, "..", "..", "..");
+      if ((0, import_fs99.existsSync)((0, import_path118.join)(pkgDir, "package.json"))) {
+        return pkgDir;
+      }
     }
   }
   try {
     const __filename4 = (0, import_url19.fileURLToPath)(importMetaUrl);
     const __dirname2 = (0, import_path118.dirname)(__filename4);
-    return (0, import_path118.join)(__dirname2, "..", "..", "..");
+    const pkgDir = (0, import_path118.join)(__dirname2, "..", "..", "..");
+    if ((0, import_fs99.existsSync)((0, import_path118.join)(pkgDir, "package.json"))) {
+      return pkgDir;
+    }
   } catch {
-    return process.cwd();
   }
+  return process.cwd();
 }
 function formatTimestamp2() {
   const now = /* @__PURE__ */ new Date();
