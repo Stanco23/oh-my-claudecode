@@ -1,6 +1,6 @@
 {
   "name": "@stanco323/oh-my-claude-code",
-  "version": "4.11.2",
+  "version": "4.11.3",
   "description": "Multi-agent orchestration system for Claude Code - Inspired by oh-my-opencode",
   "keywords": [
     "claude",
