@@ -100,13 +100,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Yeachan-Heo/oh-my-claudecode.git"
+    "url": "git+https://github.com/Stanco23/oh-my-claudecode.git"
   },
-  "homepage": "https://github.com/Yeachan-Heo/oh-my-claudecode#readme",
+  "homepage": "https://github.com/Stanco23/oh-my-claudecode#readme",
   "bugs": {
-    "url": "https://github.com/Yeachan-Heo/oh-my-claudecode/issues"
+    "url": "https://github.com/Stanco23/oh-my-claudecode/issues"
   },
-  "author": "Yeachan Heo",
+  "author": "Vuk Stanic",
   "license": "MIT",
   "keywords": [
     "claude",
