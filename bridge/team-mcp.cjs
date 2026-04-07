@@ -17775,6 +17775,7 @@ var StdioServerTransport = class {
 };
 
 // src/mcp/team-server.ts
+var import_node_crypto = require("node:crypto");
 var import_child_process4 = require("child_process");
 var import_path6 = require("path");
 var import_url = require("url");
@@ -18262,11 +18263,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
       import_fs4.constants.O_CREAT | import_fs4.constants.O_EXCL | import_fs4.constants.O_WRONLY,
       384
     );
-    const payload = JSON.stringify({
-      pid: process.pid,
-      timestamp: Date.now()
-    });
-    (0, import_fs4.writeSync)(fd, payload, null, "utf-8");
+    try {
+      const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+      (0, import_fs4.writeSync)(fd, payload, null, "utf-8");
+    } catch (writeErr) {
+      try {
+        (0, import_fs4.closeSync)(fd);
+      } catch {
+      }
+      try {
+        (0, import_fs4.unlinkSync)(lockPath);
+      } catch {
+      }
+      throw writeErr;
+    }
     return { fd, path: lockPath };
   } catch (err) {
     if (err && typeof err === "object" && "code" in err && err.code === "EEXIST") {
@@ -18281,11 +18291,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
             import_fs4.constants.O_CREAT | import_fs4.constants.O_EXCL | import_fs4.constants.O_WRONLY,
             384
           );
-          const payload = JSON.stringify({
-            pid: process.pid,
-            timestamp: Date.now()
-          });
-          (0, import_fs4.writeSync)(fd, payload, null, "utf-8");
+          try {
+            const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+            (0, import_fs4.writeSync)(fd, payload, null, "utf-8");
+          } catch (writeErr) {
+            try {
+              (0, import_fs4.closeSync)(fd);
+            } catch {
+            }
+            try {
+              (0, import_fs4.unlinkSync)(lockPath);
+            } catch {
+            }
+            throw writeErr;
+          }
           return { fd, path: lockPath };
         } catch {
           return null;
@@ -18703,7 +18722,7 @@ async function handleStart(args) {
   }
   const input = startSchema.parse(args);
   validateTeamName(input.teamName);
-  const jobId = `omc-${Date.now().toString(36)}`;
+  const jobId = `omc-${Date.now().toString(36)}${(0, import_node_crypto.randomUUID)().slice(0, 8)}`;
   const runtimeCliPath = (0, import_path6.join)(__ownDir, "runtime-cli.cjs");
   const job = { status: "running", startedAt: Date.now(), teamName: input.teamName, cwd: input.cwd };
   omcTeamJobs.set(jobId, job);

@@ -25,8 +25,8 @@ vi.mock('../tmux-utils.js', () => ({
     quoteShellArg: vi.fn((s) => s),
     isClaudeAvailable: vi.fn(() => true),
 }));
-import { runClaude, launchCommand, extractNotifyFlag, extractOpenClawFlag, extractTelegramFlag, extractDiscordFlag, extractSlackFlag, extractWebhookFlag, normalizeClaudeLaunchArgs, isPrintMode, prepareOmcLaunchConfigDir } from '../launch.js';
-import { resolveLaunchPolicy, buildTmuxShellCommand, } from '../tmux-utils.js';
+import { runClaude, launchCommand, extractNotifyFlag, extractOpenClawFlag, extractTelegramFlag, extractDiscordFlag, extractSlackFlag, extractWebhookFlag, normalizeClaudeLaunchArgs, isPrintMode, prepareOmcLaunchConfigDir, buildEnvExportPrefix, TMUX_ENV_FORWARD } from '../launch.js';
+import { resolveLaunchPolicy, buildTmuxShellCommand, wrapWithLoginShell, } from '../tmux-utils.js';
 // ---------------------------------------------------------------------------
 // extractNotifyFlag
 // ---------------------------------------------------------------------------
@@ -728,6 +728,17 @@ describe('prepareOmcLaunchConfigDir / launchCommand OMC companion loading', () =
         expect(readFileSync(join(configDir, 'CLAUDE.md'), 'utf-8')).toBe('# User base config\n');
         expect(existsSync(join(runtimeDir, 'settings.json'))).toBe(true);
     });
+    it('mirrors keybindings.json and rules/ into the runtime config dir', () => {
+        const configDir = join(tempRoot, '.claude');
+        mkdirSync(join(configDir, 'rules'), { recursive: true });
+        writeFileSync(join(configDir, 'CLAUDE-omc.md'), '<!-- OMC:START -->\n# OMC\n<!-- OMC:END -->\n');
+        writeFileSync(join(configDir, 'keybindings.json'), '{"bindings":[]}');
+        writeFileSync(join(configDir, 'rules', 'my-rule.md'), '# Rule');
+        const runtimeDir = prepareOmcLaunchConfigDir(configDir);
+        expect(runtimeDir).not.toBe(configDir);
+        expect(existsSync(join(runtimeDir, 'keybindings.json'))).toBe(true);
+        expect(existsSync(join(runtimeDir, 'rules'))).toBe(true);
+    });
     it('leaves CLAUDE_CONFIG_DIR unchanged when no preserved companion exists', () => {
         const configDir = join(tempRoot, '.claude');
         mkdirSync(configDir, { recursive: true });
@@ -803,6 +814,133 @@ describe('runClaude — print mode bypasses tmux (issue #1665)', () => {
         const calls = vi.mocked(execFileSync).mock.calls;
         const tmuxCall = calls.find(([cmd]) => cmd === 'tmux');
         expect(tmuxCall).toBeDefined();
+    });
+});
+// ---------------------------------------------------------------------------
+// buildEnvExportPrefix — unit tests
+// ---------------------------------------------------------------------------
+describe('buildEnvExportPrefix', () => {
+    const savedEnv = {};
+    const testVars = ['TEST_VAR_A', 'TEST_VAR_B', 'TEST_VAR_C'];
+    beforeEach(() => {
+        for (const key of testVars) {
+            savedEnv[key] = process.env[key];
+            delete process.env[key];
+        }
+    });
+    afterEach(() => {
+        for (const key of testVars) {
+            if (savedEnv[key] !== undefined) {
+                process.env[key] = savedEnv[key];
+            }
+            else {
+                delete process.env[key];
+            }
+        }
+    });
+    it('returns empty string when no vars are set', () => {
+        expect(buildEnvExportPrefix(testVars)).toBe('');
+    });
+    it('builds export statement for a single set var', () => {
+        process.env.TEST_VAR_A = '/some/path';
+        const result = buildEnvExportPrefix(['TEST_VAR_A']);
+        expect(result).toBe('export TEST_VAR_A=/some/path; ');
+    });
+    it('builds semicolon-separated exports for multiple set vars', () => {
+        process.env.TEST_VAR_A = 'aaa';
+        process.env.TEST_VAR_B = 'bbb';
+        const result = buildEnvExportPrefix(['TEST_VAR_A', 'TEST_VAR_B', 'TEST_VAR_C']);
+        expect(result).toBe('export TEST_VAR_A=aaa; export TEST_VAR_B=bbb; ');
+    });
+    it('skips unset vars and only exports defined ones', () => {
+        process.env.TEST_VAR_B = 'only-b';
+        const result = buildEnvExportPrefix(testVars);
+        expect(result).toBe('export TEST_VAR_B=only-b; ');
+    });
+    it('exports vars with empty string values', () => {
+        process.env.TEST_VAR_A = '';
+        const result = buildEnvExportPrefix(['TEST_VAR_A']);
+        expect(result).toBe('export TEST_VAR_A=; ');
+    });
+});
+// ---------------------------------------------------------------------------
+// buildEnvExportPrefix — shell quoting (uses real quoteShellArg via mock passthrough)
+// ---------------------------------------------------------------------------
+describe('buildEnvExportPrefix — quoting delegation', () => {
+    const saved = process.env.TEST_QUOTE_VAR;
+    afterEach(() => {
+        if (saved !== undefined) {
+            process.env.TEST_QUOTE_VAR = saved;
+        }
+        else {
+            delete process.env.TEST_QUOTE_VAR;
+        }
+    });
+    it('delegates value quoting to quoteShellArg', async () => {
+        process.env.TEST_QUOTE_VAR = 'has spaces';
+        buildEnvExportPrefix(['TEST_QUOTE_VAR']);
+        const { quoteShellArg: mockQuote } = vi.mocked(await import('../tmux-utils.js'));
+        expect(mockQuote).toHaveBeenCalledWith('has spaces');
+    });
+});
+// ---------------------------------------------------------------------------
+// TMUX_ENV_FORWARD — allowlist contract
+// ---------------------------------------------------------------------------
+describe('TMUX_ENV_FORWARD allowlist', () => {
+    it('includes CLAUDE_CONFIG_DIR', () => {
+        expect(TMUX_ENV_FORWARD).toContain('CLAUDE_CONFIG_DIR');
+    });
+    it('includes all OMC launch flags', () => {
+        for (const name of ['OMC_NOTIFY', 'OMC_OPENCLAW', 'OMC_TELEGRAM', 'OMC_DISCORD', 'OMC_SLACK', 'OMC_WEBHOOK']) {
+            expect(TMUX_ENV_FORWARD).toContain(name);
+        }
+    });
+});
+// ---------------------------------------------------------------------------
+// runClaude outside-tmux — env forwarding into tmux command
+// ---------------------------------------------------------------------------
+describe('runClaude outside-tmux — env forwarding', () => {
+    const savedConfigDir = process.env.CLAUDE_CONFIG_DIR;
+    beforeEach(() => {
+        vi.resetAllMocks();
+        execFileSync.mockReturnValue(Buffer.from(''));
+        resolveLaunchPolicy.mockReturnValue('outside-tmux');
+    });
+    afterEach(() => {
+        if (savedConfigDir !== undefined) {
+            process.env.CLAUDE_CONFIG_DIR = savedConfigDir;
+        }
+        else {
+            delete process.env.CLAUDE_CONFIG_DIR;
+        }
+    });
+    it('injects CLAUDE_CONFIG_DIR export into the tmux shell command', () => {
+        process.env.CLAUDE_CONFIG_DIR = '/custom/config';
+        runClaude('/tmp', [], 'sid');
+        const wrapCall = vi.mocked(wrapWithLoginShell).mock.calls[0];
+        expect(wrapCall).toBeDefined();
+        expect(wrapCall[0]).toContain('export CLAUDE_CONFIG_DIR=/custom/config');
+    });
+    it('places env exports before the sleep/claude command', () => {
+        process.env.CLAUDE_CONFIG_DIR = '/custom/config';
+        runClaude('/tmp', [], 'sid');
+        const cmdString = vi.mocked(wrapWithLoginShell).mock.calls[0][0];
+        const exportIdx = cmdString.indexOf('export CLAUDE_CONFIG_DIR');
+        const sleepIdx = cmdString.indexOf('sleep 0.3');
+        expect(exportIdx).toBeGreaterThanOrEqual(0);
+        expect(sleepIdx).toBeGreaterThan(exportIdx);
+    });
+    it('does not inject exports when no forwarded vars are set', () => {
+        delete process.env.CLAUDE_CONFIG_DIR;
+        delete process.env.OMC_NOTIFY;
+        delete process.env.OMC_OPENCLAW;
+        delete process.env.OMC_TELEGRAM;
+        delete process.env.OMC_DISCORD;
+        delete process.env.OMC_SLACK;
+        delete process.env.OMC_WEBHOOK;
+        runClaude('/tmp', [], 'sid');
+        const cmdString = vi.mocked(wrapWithLoginShell).mock.calls[0][0];
+        expect(cmdString).not.toContain('export ');
     });
 });
 //# sourceMappingURL=launch.test.js.map

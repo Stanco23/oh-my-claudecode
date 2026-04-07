@@ -305,6 +305,36 @@ Optional compatibility enablement (manual only):
 - **Deterministic parse-failure handling**: malformed result artifacts are treated as terminal `failed`.
 - **Cleanup scope**: shutdown/cleanup only clears `.omc/state/team/{teamName}` for the target team (never sibling teams).
 
+### Artifact descriptors and bounded handoff
+
+OMC handoffs follow an artifact-first discipline:
+
+- **Control plane** data stays small and operational: queue state, worker claims, session state, and interop task/message envelopes.
+- **Data plane** artifacts stay durable: plans, prompts, specs, traces, and result files.
+- Large payloads should be referenced by descriptor instead of copied into control-plane state.
+- Current low-risk call sites follow this split explicitly:
+  - shared interop state writes oversized task descriptions, task results, and shared messages to `.omc/state/interop/artifacts/**`
+  - prompt persistence keeps durable prompt/response files in `.omc/prompts/**` and exposes descriptor metadata through job status records
+
+Canonical descriptor fields:
+
+| Field | Meaning |
+|------|---------|
+| `kind` | Artifact type such as `plan`, `prompt`, `result`, or `trace` |
+| `path` | Durable artifact path |
+| `contentHash?` | Optional integrity hint |
+| `createdAt` | Artifact creation timestamp |
+| `producer` | Owning worker/tool/skill |
+| `sizeBytes?` | Optional size for threshold checks |
+| `retention` | Retention/ownership hint |
+| `expiresAt?` | Optional expiry for short-lived artifacts |
+
+Bounded handoff policy:
+
+1. Keep small payloads inline only when the call site's explicit threshold allows it.
+2. For larger payloads, pass a short summary plus the descriptor.
+3. Keep durable content in artifact paths such as `.omc/plans/`, `.omc/prompts/`, and related artifact stores rather than embedding full bodies into queue or status records.
+
 ## Agents (29 Total)
 
 Always use `oh-my-claudecode:` prefix when calling via Task tool.

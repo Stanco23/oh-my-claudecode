@@ -217,7 +217,7 @@ async function main(watchMode = false, skipInit = false) {
                 0;
             if (cols > 0) {
                 config.maxWidth = cols;
-                if (!config.wrapMode)
+                if (config.wrapMode === "truncate")
                     config.wrapMode = "wrap";
             }
         }

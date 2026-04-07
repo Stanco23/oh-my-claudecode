@@ -20184,7 +20184,7 @@ function getSecurityConfig() {
       disableAutoUpdate: base.disableAutoUpdate || (fileOverrides.disableAutoUpdate ?? false),
       disableRemoteMcp: base.disableRemoteMcp || (fileOverrides.disableRemoteMcp ?? false),
       disableExternalLLM: base.disableExternalLLM || (fileOverrides.disableExternalLLM ?? false),
-      hardMaxIterations: Math.min(base.hardMaxIterations, fileOverrides.hardMaxIterations ?? base.hardMaxIterations)
+      hardMaxIterations: Math.min(base.hardMaxIterations, typeof fileOverrides.hardMaxIterations === "number" && fileOverrides.hardMaxIterations > 0 ? fileOverrides.hardMaxIterations : base.hardMaxIterations)
     };
   } else {
     cachedConfig = {
@@ -23182,7 +23182,7 @@ var stateClearTool = {
           mode,
           source: "state_clear"
         };
-        const legacySignalPath = (0, import_path15.join)(root, "state", "cancel-signal-state.json");
+        const legacySignalPath = (0, import_path15.join)(getOmcRoot(root), "state", "cancel-signal-state.json");
         try {
           atomicWriteJsonSync(legacySignalPath, cancelSignalPayload);
         } catch {
@@ -23604,11 +23604,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
       import_fs15.constants.O_CREAT | import_fs15.constants.O_EXCL | import_fs15.constants.O_WRONLY,
       384
     );
-    const payload = JSON.stringify({
-      pid: process.pid,
-      timestamp: Date.now()
-    });
-    (0, import_fs15.writeSync)(fd, payload, null, "utf-8");
+    try {
+      const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+      (0, import_fs15.writeSync)(fd, payload, null, "utf-8");
+    } catch (writeErr) {
+      try {
+        (0, import_fs15.closeSync)(fd);
+      } catch {
+      }
+      try {
+        (0, import_fs15.unlinkSync)(lockPath);
+      } catch {
+      }
+      throw writeErr;
+    }
     return { fd, path: lockPath };
   } catch (err) {
     if (err && typeof err === "object" && "code" in err && err.code === "EEXIST") {
@@ -23623,11 +23632,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
             import_fs15.constants.O_CREAT | import_fs15.constants.O_EXCL | import_fs15.constants.O_WRONLY,
             384
           );
-          const payload = JSON.stringify({
-            pid: process.pid,
-            timestamp: Date.now()
-          });
-          (0, import_fs15.writeSync)(fd, payload, null, "utf-8");
+          try {
+            const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+            (0, import_fs15.writeSync)(fd, payload, null, "utf-8");
+          } catch (writeErr) {
+            try {
+              (0, import_fs15.closeSync)(fd);
+            } catch {
+            }
+            try {
+              (0, import_fs15.unlinkSync)(lockPath);
+            } catch {
+            }
+            throw writeErr;
+          }
           return { fd, path: lockPath };
         } catch {
           return null;
@@ -25042,7 +25060,7 @@ function parseSinceSpec(since) {
   return Number.isNaN(parsed) ? void 0 : parsed;
 }
 function encodeProjectPath(projectPath) {
-  return projectPath.replace(/[\\/]/g, "-");
+  return projectPath.replace(/[/\\.]/g, "-");
 }
 function getMainRepoRoot(projectRoot) {
   try {

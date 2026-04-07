@@ -903,11 +903,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
       import_fs9.constants.O_CREAT | import_fs9.constants.O_EXCL | import_fs9.constants.O_WRONLY,
       384
     );
-    const payload = JSON.stringify({
-      pid: process.pid,
-      timestamp: Date.now()
-    });
-    (0, import_fs9.writeSync)(fd, payload, null, "utf-8");
+    try {
+      const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+      (0, import_fs9.writeSync)(fd, payload, null, "utf-8");
+    } catch (writeErr) {
+      try {
+        (0, import_fs9.closeSync)(fd);
+      } catch {
+      }
+      try {
+        (0, import_fs9.unlinkSync)(lockPath);
+      } catch {
+      }
+      throw writeErr;
+    }
     return { fd, path: lockPath };
   } catch (err) {
     if (err && typeof err === "object" && "code" in err && err.code === "EEXIST") {
@@ -922,11 +931,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
             import_fs9.constants.O_CREAT | import_fs9.constants.O_EXCL | import_fs9.constants.O_WRONLY,
             384
           );
-          const payload = JSON.stringify({
-            pid: process.pid,
-            timestamp: Date.now()
-          });
-          (0, import_fs9.writeSync)(fd, payload, null, "utf-8");
+          try {
+            const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+            (0, import_fs9.writeSync)(fd, payload, null, "utf-8");
+          } catch (writeErr) {
+            try {
+              (0, import_fs9.closeSync)(fd);
+            } catch {
+            }
+            try {
+              (0, import_fs9.unlinkSync)(lockPath);
+            } catch {
+            }
+            throw writeErr;
+          }
           return { fd, path: lockPath };
         } catch {
           return null;
@@ -2288,7 +2306,7 @@ function getSecurityConfig() {
       disableAutoUpdate: base.disableAutoUpdate || (fileOverrides.disableAutoUpdate ?? false),
       disableRemoteMcp: base.disableRemoteMcp || (fileOverrides.disableRemoteMcp ?? false),
       disableExternalLLM: base.disableExternalLLM || (fileOverrides.disableExternalLLM ?? false),
-      hardMaxIterations: Math.min(base.hardMaxIterations, fileOverrides.hardMaxIterations ?? base.hardMaxIterations)
+      hardMaxIterations: Math.min(base.hardMaxIterations, typeof fileOverrides.hardMaxIterations === "number" && fileOverrides.hardMaxIterations > 0 ? fileOverrides.hardMaxIterations : base.hardMaxIterations)
     };
   } else {
     cachedConfig = {
@@ -4553,7 +4571,8 @@ function canonicalizeTeamConfigWorkers(config) {
   }
   return {
     ...config,
-    workers
+    workers,
+    worker_count: workers.length
   };
 }
 
@@ -5542,20 +5561,26 @@ async function startTeamV2(config) {
       }
     }
     if (workerLaunch.startupFailureReason) {
-      await appendTeamEvent(sanitized, {
+      const logEventFailure2 = createSwallowedErrorLogger(
+        "team.runtime-v2.startTeamV2 appendTeamEvent failed"
+      );
+      appendTeamEvent(sanitized, {
         type: "team_leader_nudge",
         worker: "leader-fixed",
         reason: `startup_manual_intervention_required:${wName}:${workerLaunch.startupFailureReason}`
-      }, leaderCwd);
+      }, leaderCwd).catch(logEventFailure2);
     }
   }
   teamConfig.workers = workersInfo;
   await saveTeamConfig(teamConfig, leaderCwd);
-  await appendTeamEvent(sanitized, {
+  const logEventFailure = createSwallowedErrorLogger(
+    "team.runtime-v2.startTeamV2 appendTeamEvent failed"
+  );
+  appendTeamEvent(sanitized, {
     type: "team_leader_nudge",
     worker: "leader-fixed",
     reason: `start_team_v2: workers=${config.workerCount} tasks=${config.tasks.length} panes=${workerPaneIds.length}`
-  }, leaderCwd);
+  }, leaderCwd).catch(logEventFailure);
   return {
     teamName: sanitized,
     sanitizedName: sanitized,

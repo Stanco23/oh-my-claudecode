@@ -41,7 +41,8 @@ jobs:
           if [ -n "${{ inputs.upstream_version }}" ]; then
             VERSION="${{ inputs.upstream_version }}"
           else
-            VERSION=$(git tag --list 'upstream/v*' --sort=-v:refname | head -n1 | sed 's/upstream\///')
+            # Upstream uses "v4.11.0" format, not "upstream/v4.11.0"
+            VERSION=$(git tag --list 'v*' --sort=-v:refname | head -n1)
           fi
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Found upstream version: $VERSION"
@@ -49,7 +50,8 @@ jobs:
       - name: Check if version already published
         id: check_version
         run: |
-          if npm view @stanco323/oh-my-claude-code@${VERSION#v} version &>/dev/null; then
+          VERSION_NUM="${VERSION#v}"
+          if npm view @stanco323/oh-my-claude-code@$VERSION_NUM version &>/dev/null; then
             echo "ALREADY_PUBLISHED=true" >> $GITHUB_OUTPUT
             echo "Version $VERSION already published on npm"
           else
@@ -59,28 +61,13 @@ jobs:
       - name: Merge upstream tag into main
         run: |
           git checkout main
-          git merge --no-edit "upstream/${VERSION}" || {
-            # If merge fails (already merged or nothing to merge), that's fine
-            echo "Merge result: $?"
+          git fetch upstream main
+          # Merge upstream/main (not a specific tag) to capture all changes
+          git merge --no-edit upstream/main || {
+            echo "Merge had conflicts or nothing to merge - that's fine"
           }
         env:
           VERSION: ${{ steps.upstream_version.outputs.VERSION }}
-
-      - name: Check for actual changes to publish
-        id: changes_check
-        run: |
-          # Check if there are any differences from upstream that need publishing
-          if [ "${{ steps.check_version.outputs.ALREADY_PUBLISHED }}" == "true" ]; then
-            # Even if version exists on npm, check if content changed
-            # by comparing the merged content hash against what npm has
-            PKG_HASH=$(npm pack --dry-run 2>/dev/null | grep "package name" || echo "unknown")
-            echo "Package content check for already-published version"
-            # If ALREADY_PUBLISHED and merge had no conflicts/fast-forward,
-            # we still need to rebuild to verify tests pass
-            echo "CHANGES_TO_PUBLISH=true" >> $GITHUB_OUTPUT
-          else
-            echo "CHANGES_TO_PUBLISH=true" >> $GITHUB_OUTPUT
-          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -103,5 +90,5 @@ jobs:
 
       - name: Push synced main
         run: |
-          # Check if there are any commits to push
-          git push origin main || echo "Nothing to push or push failed"
+          # Push if there are changes
+          git push origin main

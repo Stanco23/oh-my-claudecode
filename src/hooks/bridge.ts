@@ -102,8 +102,7 @@ import { wrapUntrustedFileContent } from "../agents/prompt-helpers.js";
 
 const PKILL_F_FLAG_PATTERN = /\bpkill\b.*\s-f\b/;
 const PKILL_FULL_FLAG_PATTERN = /\bpkill\b.*--full\b/;
-const WORKER_BLOCKED_TMUX_PATTERN =
-  /\btmux\s+(split-window|new-session|new-window|join-pane|send-keys)\b/i;
+const WORKER_BLOCKED_TMUX_PATTERN = /\btmux\s+/i;
 const WORKER_BLOCKED_TEAM_CLI_PATTERN = /\bom[cx]\s+team\b(?!\s+api\b)/i;
 const WORKER_BLOCKED_SKILL_PATTERN = /\$(team|ultrawork|autopilot|ralph)\b/i;
 
@@ -1552,19 +1551,9 @@ function processPreToolUse(input: HookInput): HookOutput {
     : [];
   let modifiedToolInput: Record<string, unknown> | undefined;
 
-  const promptPrerequisiteProgress = recordPromptPrerequisiteProgress(
-    directory,
-    input.sessionId,
-    input.toolName,
-    input.toolInput,
-  );
-
-  if (promptPrerequisiteProgress?.isComplete) {
-    preToolMessages.push(
-      "[PROMPT PREREQUISITES COMPLETE] Required context tools/files were read. Editing and agent delegation are unblocked.",
-    );
-  }
-
+  // Check blocking BEFORE recording progress — otherwise a denied tool
+  // (e.g. Edit) that also matches a prerequisite would have its progress
+  // persisted even though the tool never actually executed.
   const promptPrerequisiteState = readPromptPrerequisiteState(directory, input.sessionId);
   if (
     promptPrerequisiteState?.active
@@ -1578,6 +1567,19 @@ function processPreToolUse(input: HookInput): HookOutput {
         permissionDecisionReason: buildPromptPrerequisiteDenyReason(promptPrerequisiteState, input.toolName),
       },
     } as HookOutput & { hookSpecificOutput: Record<string, unknown> };
+  }
+
+  const promptPrerequisiteProgress = recordPromptPrerequisiteProgress(
+    directory,
+    input.sessionId,
+    input.toolName,
+    input.toolInput,
+  );
+
+  if (promptPrerequisiteProgress?.isComplete) {
+    preToolMessages.push(
+      "[PROMPT PREREQUISITES COMPLETE] Required context tools/files were read. Editing and agent delegation are unblocked.",
+    );
   }
 
   // Force-inherit: deny Task/Agent calls that carry a `model` parameter when

@@ -421,7 +421,8 @@ function canonicalizeTeamConfigWorkers(config) {
   }
   return {
     ...config,
-    workers
+    workers,
+    worker_count: workers.length
   };
 }
 var init_worker_canonicalization = __esm({
@@ -683,18 +684,29 @@ async function teamListTasks(teamName, cwd) {
   });
 }
 async function teamUpdateTask(teamName, taskId, updates, cwd) {
-  const existing = await teamReadTask(teamName, taskId, cwd);
-  if (!existing) return null;
-  const merged = {
-    ...normalizeTask(existing),
-    ...updates,
-    id: existing.id,
-    created_at: existing.created_at,
-    version: Math.max(1, existing.version ?? 1) + 1
-  };
-  const p = canonicalTaskFilePath(teamName, taskId, cwd);
-  await writeAtomic(p, JSON.stringify(merged, null, 2));
-  return merged;
+  const timeoutMs = 5e3;
+  const deadline = Date.now() + timeoutMs;
+  let delayMs = 20;
+  while (Date.now() < deadline) {
+    const result = await withTaskClaimLock(teamName, taskId, cwd, async () => {
+      const existing = await teamReadTask(teamName, taskId, cwd);
+      if (!existing) return null;
+      const merged = {
+        ...normalizeTask(existing),
+        ...updates,
+        id: existing.id,
+        created_at: existing.created_at,
+        version: Math.max(1, existing.version ?? 1) + 1
+      };
+      const p = canonicalTaskFilePath(teamName, taskId, cwd);
+      await writeAtomic(p, JSON.stringify(merged, null, 2));
+      return merged;
+    });
+    if (result.ok) return result.value;
+    await new Promise((resolve4) => setTimeout(resolve4, delayMs));
+    delayMs = Math.min(delayMs * 2, 200);
+  }
+  throw new Error(`Failed to acquire task update lock for task ${taskId} in team ${teamName} after ${timeoutMs}ms`);
 }
 async function teamClaimTask(teamName, taskId, workerName, expectedVersion, cwd) {
   const manifest = await teamReadManifest(teamName, cwd);
@@ -3580,7 +3592,7 @@ function getSecurityConfig() {
       disableAutoUpdate: base.disableAutoUpdate || (fileOverrides.disableAutoUpdate ?? false),
       disableRemoteMcp: base.disableRemoteMcp || (fileOverrides.disableRemoteMcp ?? false),
       disableExternalLLM: base.disableExternalLLM || (fileOverrides.disableExternalLLM ?? false),
-      hardMaxIterations: Math.min(base.hardMaxIterations, fileOverrides.hardMaxIterations ?? base.hardMaxIterations)
+      hardMaxIterations: Math.min(base.hardMaxIterations, typeof fileOverrides.hardMaxIterations === "number" && fileOverrides.hardMaxIterations > 0 ? fileOverrides.hardMaxIterations : base.hardMaxIterations)
     };
   } else {
     cachedConfig = {
@@ -4183,11 +4195,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
       fsConstants.O_CREAT | fsConstants.O_EXCL | fsConstants.O_WRONLY,
       384
     );
-    const payload = JSON.stringify({
-      pid: process.pid,
-      timestamp: Date.now()
-    });
-    writeSync3(fd, payload, null, "utf-8");
+    try {
+      const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+      writeSync3(fd, payload, null, "utf-8");
+    } catch (writeErr) {
+      try {
+        closeSync3(fd);
+      } catch {
+      }
+      try {
+        unlinkSync3(lockPath);
+      } catch {
+      }
+      throw writeErr;
+    }
     return { fd, path: lockPath };
   } catch (err) {
     if (err && typeof err === "object" && "code" in err && err.code === "EEXIST") {
@@ -4202,11 +4223,20 @@ function tryAcquireSync(lockPath, staleLockMs) {
             fsConstants.O_CREAT | fsConstants.O_EXCL | fsConstants.O_WRONLY,
             384
           );
-          const payload = JSON.stringify({
-            pid: process.pid,
-            timestamp: Date.now()
-          });
-          writeSync3(fd, payload, null, "utf-8");
+          try {
+            const payload = JSON.stringify({ pid: process.pid, timestamp: Date.now() });
+            writeSync3(fd, payload, null, "utf-8");
+          } catch (writeErr) {
+            try {
+              closeSync3(fd);
+            } catch {
+            }
+            try {
+              unlinkSync3(lockPath);
+            } catch {
+            }
+            throw writeErr;
+          }
           return { fd, path: lockPath };
         } catch {
           return null;
@@ -5204,20 +5234,26 @@ async function startTeamV2(config) {
       }
     }
     if (workerLaunch.startupFailureReason) {
-      await appendTeamEvent(sanitized, {
+      const logEventFailure2 = createSwallowedErrorLogger(
+        "team.runtime-v2.startTeamV2 appendTeamEvent failed"
+      );
+      appendTeamEvent(sanitized, {
         type: "team_leader_nudge",
         worker: "leader-fixed",
         reason: `startup_manual_intervention_required:${wName}:${workerLaunch.startupFailureReason}`
-      }, leaderCwd);
+      }, leaderCwd).catch(logEventFailure2);
     }
   }
   teamConfig.workers = workersInfo;
   await saveTeamConfig(teamConfig, leaderCwd);
-  await appendTeamEvent(sanitized, {
+  const logEventFailure = createSwallowedErrorLogger(
+    "team.runtime-v2.startTeamV2 appendTeamEvent failed"
+  );
+  appendTeamEvent(sanitized, {
     type: "team_leader_nudge",
     worker: "leader-fixed",
     reason: `start_team_v2: workers=${config.workerCount} tasks=${config.tasks.length} panes=${workerPaneIds.length}`
-  }, leaderCwd);
+  }, leaderCwd).catch(logEventFailure);
   return {
     teamName: sanitized,
     sanitizedName: sanitized,
