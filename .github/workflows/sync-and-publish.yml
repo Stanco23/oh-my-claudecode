@@ -30,7 +30,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Add upstream remote
-        run: git remote add upstream https://github.com/Yeachan-Heo/oh-my-claude-code.git
+        run: git remote add upstream https://github.com/Yeachan-Heo/oh-my-claudecode
 
       - name: Fetch upstream tags
         run: git fetch upstream --tags
