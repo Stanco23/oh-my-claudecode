@@ -122,6 +122,7 @@ describe('Builtin Skills', () => {
     it('should have valid skill names', () => {
       const skills = createBuiltinSkills();
       const expectedSkills = [
+        'adapt',
         'ask',
         'ai-slop-cleaner',
         'autopilot',
@@ -396,7 +397,7 @@ describe('Builtin Skills', () => {
     it('should return canonical skill names by default', () => {
       const names = listBuiltinSkillNames();
 
-      expect(names).toHaveLength(33);
+      expect(names).toHaveLength(34);
       expect(names).toContain('ai-slop-cleaner');
       expect(names).toContain('ask');
       expect(names).toContain('autopilot');
