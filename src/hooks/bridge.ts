@@ -1174,6 +1174,32 @@ async function processSessionStart(input: HookInput): Promise<HookOutput> {
 
   const messages: string[] = [];
 
+  // Detect --adapt / --adapt-auto flags and invoke the adapt skill
+  const promptText = getPromptText(input);
+  if (promptText) {
+    const adaptAutoMatch = /\B--adapt-auto\b/.exec(promptText);
+    const adaptMatch = /\B--adapt\b/.exec(promptText);
+    if (adaptAutoMatch || adaptMatch) {
+      const mode = adaptAutoMatch ? "auto" : "ask";
+      // Load adapt skill content directly from disk (mirrors keyword-detector.mjs pattern)
+      const skillPath = join(directory, '..', 'skills', 'adapt', 'SKILL.md');
+      let skillContent: string | null = null;
+      try {
+        if (existsSync(skillPath)) {
+          skillContent = readFileSync(skillPath, "utf-8");
+        }
+      } catch {
+        // Best-effort: skill content unavailable
+      }
+      if (skillContent) {
+        messages.push(`[ADAPT SKILL INVOKED (${mode} mode)]\n\n${skillContent}\n\n---\nMode: ${mode}`);
+      } else {
+        // Fallback: construct Skill tool invocation
+        messages.push(`[ADAPT SKILL INVOKED (${mode} mode)]\n\nYou MUST invoke the adapt skill using the Skill tool:\n\nSkill: oh-my-claudecode:adapt\n\nMode: ${mode}\n\nIMPORTANT: Invoke the adapt skill IMMEDIATELY. Do not proceed without loading the skill instructions.`);
+      }
+    }
+  }
+
   // Inject startup codebase map (issue #804) — first context item so agents orient quickly
   try {
     const overlayResult = buildAgentsOverlay(directory);

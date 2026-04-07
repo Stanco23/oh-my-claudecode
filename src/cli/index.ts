@@ -54,6 +54,7 @@ import { getRuntimePackageVersion } from '../lib/version.js';
 import { launchCommand } from './launch.js';
 import { interopCommand } from './interop.js';
 import { askCommand, ASK_USAGE } from './ask.js';
+import { adaptCommand } from './commands/adapt.js';
 import { warnIfWin32 } from './win32-warning.js';
 import { autoresearchCommand } from './autoresearch.js';
 import { runHudWatchLoop } from './hud-watch.js';
@@ -75,6 +76,11 @@ async function defaultAction() {
   // so nested Claude launch checks only apply to actual Claude launches.
   if (args[0] === 'ask') {
     await askCommand(args.slice(1));
+    return;
+  }
+
+  if (args[0] === 'adapt') {
+    adaptCommand(args.slice(1));
     return;
   }
 
