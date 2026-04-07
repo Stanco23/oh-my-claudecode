@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Checkout fork
         uses: actions/checkout@v4
@@ -77,10 +78,8 @@ jobs:
       - name: Run tests
         run: npm test -- --run
 
-      - name: Publish to npm (@stanco323)
+      - name: Publish to npm (@stanco323) via OIDC
         if: steps.check_version.outputs.ALREADY_PUBLISHED == 'false'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --ignore-scripts
 
       - name: Push synced main
