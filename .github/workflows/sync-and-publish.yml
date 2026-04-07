@@ -1,0 +1,90 @@
+name: Sync from Upstream & Publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_version:
+        description: 'Upstream version to sync (e.g., v4.11.0)'
+        required: false
+        type: string
+  schedule:
+    # Run daily at 00:00 UTC to check for upstream releases
+    - cron: '0 0 * * *'
+
+jobs:
+  sync-and-publish:
+    name: Sync upstream & publish @stanco323/oh-my-claude-code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/Yeachan-Heo/oh-my-claudecode.git
+
+      - name: Fetch upstream tags
+        run: git fetch upstream --tags
+
+      - name: Check latest upstream version
+        id: upstream_version
+        run: |
+          if [ -n "${{ inputs.upstream_version }}" ]; then
+            VERSION="${{ inputs.upstream_version }}"
+          else
+            VERSION=$(git tag --list 'upstream/v*' --sort=-v:refname | head -n1 | sed 's/upstream\///')
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found upstream version: $VERSION"
+
+      - name: Check if version already published
+        id: check_version
+        run: |
+          CURRENT=$(npm view @stanco323/oh-my-claude-code version 2>/dev/null || echo "0.0.0")
+          echo "CURRENT=$CURRENT" >> $GITHUB_OUTPUT
+          if npm view @stanco323/oh-my-claude-code@${VERSION#v} version &>/dev/null; then
+            echo "ALREADY_PUBLISHED=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION already published to @stanco323/oh-my-claude-code"
+          else
+            echo "ALREADY_PUBLISHED=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Abort if already published
+        if: steps.check_version.outputs.ALREADY_PUBLISHED == 'true'
+        run: exit 78
+
+      - name: Merge upstream tag into main
+        run: |
+          git checkout main
+          git merge --no-edit "upstream/${VERSION}"
+        env:
+          VERSION: ${{ steps.upstream_version.outputs.VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Publish to npm (@stanco323)
+        run: npm publish --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push synced main
+        run: git push origin main
