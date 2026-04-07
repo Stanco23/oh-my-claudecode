@@ -1,20 +1,47 @@
 {
-  "name": "@stanco/oh-my-claude-code",
+  "name": "@stanco323/oh-my-claude-code",
   "version": "4.10.3",
   "description": "Multi-agent orchestration system for Claude Code - Inspired by oh-my-opencode",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "agent",
+    "multi-agent",
+    "orchestration",
+    "omc",
+    "claudecode",
+    "anthropic",
+    "llm"
+  ],
+  "homepage": "https://github.com/Stanco23/oh-my-claudecode#readme",
+  "bugs": {
+    "url": "https://github.com/Stanco23/oh-my-claudecode/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stanco23/oh-my-claudecode.git"
+  },
+  "license": "MIT",
+  "author": "Vuk Stanic",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "oh-my-claudecode": "bridge/cli.cjs",
     "omc": "bridge/cli.cjs",
     "omc-cli": "bridge/cli.cjs"
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
   },
   "files": [
     "dist",
@@ -98,28 +125,6 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Stanco23/oh-my-claudecode.git"
-  },
-  "homepage": "https://github.com/Stanco23/oh-my-claudecode#readme",
-  "bugs": {
-    "url": "https://github.com/Stanco23/oh-my-claudecode/issues"
-  },
-  "author": "Vuk Stanic",
-  "license": "MIT",
-  "keywords": [
-    "claude",
-    "claude-code",
-    "ai",
-    "agent",
-    "multi-agent",
-    "orchestration",
-    "omc",
-    "claudecode",
-    "anthropic",
-    "llm"
-  ],
   "publishConfig": {
     "access": "public"
   }
