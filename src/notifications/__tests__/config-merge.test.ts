@@ -170,7 +170,7 @@ describe("getNotificationConfig - file + env deep merge", () => {
         },
       }),
     );
-    vi.stubEnv("OMC_NOTIFY_TMUX_TAIL_LINES", "34");
+    vi.stubEnv("OMC_NOTIFY_TMUX_TAIL_LINES", "35");
 
     const config = getNotificationConfig();
     expect(config).not.toBeNull();
