@@ -280,7 +280,7 @@ export function reconcile(
  */
 export function getClaudeMdPath(projectRoot?: string): string {
   if (!projectRoot) {
-    projectRoot = getPackageDir();
+    projectRoot = process.cwd();
   }
   return join(projectRoot, 'CLAUDE.md');
 }

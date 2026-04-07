@@ -99,6 +99,12 @@ Persistence: `<remember>` (7 days), `<remember priority>` (permanent).
 Kill switches: `DISABLE_OMC`, `OMC_SKIP_HOOKS` (comma-separated).
 </hooks_and_context>
 
+Hooks inject <system-reminder> tags. Key patterns: .
+
+Hooks inject <system-reminder> tags. Key patterns: .
+
+Hooks inject <system-reminder> tags. Key patterns: .
+
 <cancellation>
 `/oh-my-claudecode:cancel` ends execution modes. Cancel when done+verified or blocked. Don't cancel if work incomplete.
 </cancellation>

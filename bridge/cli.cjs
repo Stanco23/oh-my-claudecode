@@ -82496,32 +82496,6 @@ function discover() {
 var import_fs97 = require("fs");
 var import_path116 = require("path");
 var import_url17 = require("url");
-function getPackageDir7() {
-  if (typeof __dirname !== "undefined" && __dirname) {
-    const currentDirName = (0, import_path116.basename)(__dirname);
-    const parentDirName = (0, import_path116.basename)((0, import_path116.dirname)(__dirname));
-    const grandparentDirName = (0, import_path116.basename)((0, import_path116.dirname)((0, import_path116.dirname)(__dirname)));
-    if (currentDirName === "bridge") {
-      return (0, import_path116.join)(__dirname, "..");
-    }
-    if (currentDirName === "adapt" && parentDirName === "features" && (grandparentDirName === "src" || grandparentDirName === "dist")) {
-      const pkgDir = (0, import_path116.join)(__dirname, "..", "..", "..");
-      if ((0, import_fs97.existsSync)((0, import_path116.join)(pkgDir, "CLAUDE.md"))) {
-        return pkgDir;
-      }
-    }
-  }
-  try {
-    const __filename4 = (0, import_url17.fileURLToPath)(importMetaUrl);
-    const __dirname2 = (0, import_path116.dirname)(__filename4);
-    const pkgDir = (0, import_path116.join)(__dirname2, "..", "..", "..");
-    if ((0, import_fs97.existsSync)((0, import_path116.join)(pkgDir, "CLAUDE.md"))) {
-      return pkgDir;
-    }
-  } catch {
-  }
-  return process.cwd();
-}
 function parseClaudeMd(claudeMdPath) {
   const skills = [];
   const agents = [];
@@ -82691,7 +82665,7 @@ function reconcile(discovered, claudeMdPath) {
 }
 function getClaudeMdPath(projectRoot) {
   if (!projectRoot) {
-    projectRoot = getPackageDir7();
+    projectRoot = process.cwd();
   }
   return (0, import_path116.join)(projectRoot, "CLAUDE.md");
 }
@@ -82807,28 +82781,108 @@ function patchClaudeMd(claudeMdPath, discovered, existingHooks) {
   try {
     let content = (0, import_fs98.readFileSync)(claudeMdPath, "utf-8");
     const sections = generateSections(discovered, existingHooks);
-    content = content.replace(
-      /<skills>[\s\S]*?<\/skills>/i,
-      `<skills>
+    const hasSkillsSection = /<skills>[\s\S]*?<\/skills>/i.test(content);
+    if (hasSkillsSection) {
+      content = content.replace(
+        /<skills>[\s\S]*?<\/skills>/i,
+        `<skills>
 ${sections.skills}
 </skills>`
-    );
-    content = content.replace(
-      /<agent_catalog>[\s\S]*?<\/agent_catalog>/i,
-      `<agent_catalog>
+      );
+    } else {
+      if (/<execution_protocols>/i.test(content)) {
+        content = content.replace(
+          /(<execution_protocols>)/i,
+          `<skills>
+${sections.skills}
+</skills>
+
+$1`
+        );
+      } else {
+        content += `
+
+<skills>
+${sections.skills}
+</skills>
+`;
+      }
+    }
+    const hasAgentCatalog = /<agent_catalog>[\s\S]*?<\/agent_catalog>/i.test(content);
+    if (hasAgentCatalog) {
+      content = content.replace(
+        /<agent_catalog>[\s\S]*?<\/agent_catalog>/i,
+        `<agent_catalog>
 ${sections.agents}
 </agent_catalog>`
-    );
-    content = content.replace(
-      /<tools>[\s\S]*?<\/tools>/i,
-      `<tools>
+      );
+    } else {
+      if (/<skills>/i.test(content)) {
+        content = content.replace(
+          /(<skills>[\s\S]*?<\/skills>)/i,
+          `$1
+
+<agent_catalog>
+${sections.agents}
+</agent_catalog>`
+        );
+      } else {
+        content += `
+
+<agent_catalog>
+${sections.agents}
+</agent_catalog>
+`;
+      }
+    }
+    const hasToolsSection = /<tools>[\s\S]*?<\/tools>/i.test(content);
+    if (hasToolsSection) {
+      content = content.replace(
+        /<tools>[\s\S]*?<\/tools>/i,
+        `<tools>
 ${sections.tools}
 </tools>`
-    );
-    content = content.replace(
-      /Hooks inject `<system-reminder>` tags\. Key patterns: [^\n]+/i,
-      sections.hooks
-    );
+      );
+    } else {
+      if (/<agent_catalog>/i.test(content)) {
+        content = content.replace(
+          /(<agent_catalog>[\s\S]*?<\/agent_catalog>)/i,
+          `$1
+
+<tools>
+${sections.tools}
+</tools>`
+        );
+      } else {
+        content += `
+
+<tools>
+${sections.tools}
+</tools>
+`;
+      }
+    }
+    const hasHooksPattern = /Hooks inject `<system-reminder>` tags\. Key patterns: [^\n]+/i.test(content);
+    if (hasHooksPattern) {
+      content = content.replace(
+        /Hooks inject `<system-reminder>` tags\. Key patterns: [^\n]+/i,
+        sections.hooks
+      );
+    } else {
+      if (/<hooks_and_context>/i.test(content)) {
+        content = content.replace(
+          /(<hooks_and_context>[\s\S]*?<\/hooks_and_context>)/i,
+          `$1
+
+${sections.hooks}`
+        );
+      } else {
+        content += `
+
+${sections.hooks}
+`;
+      }
+    }
     (0, import_fs98.writeFileSync)(claudeMdPath, content, "utf-8");
     return true;
   } catch {
@@ -82841,7 +82895,7 @@ var import_fs99 = require("fs");
 var import_path118 = require("path");
 var import_url19 = require("url");
 init_atomic_write();
-function getPackageDir8() {
+function getPackageDir7() {
   if (typeof __dirname !== "undefined" && __dirname) {
     const currentDirName = (0, import_path118.basename)(__dirname);
     const parentDirName = (0, import_path118.basename)((0, import_path118.dirname)(__dirname));
@@ -82878,7 +82932,7 @@ function formatTimestamp2() {
   return `${year}-${month}-${day}-${hours}${minutes}${seconds}`;
 }
 function getCheckpointDir() {
-  const packageRoot = getPackageDir8();
+  const packageRoot = getPackageDir7();
   return (0, import_path118.join)(packageRoot, ".omc", "adapt", "checkpoints");
 }
 function ensureCheckpointDir() {

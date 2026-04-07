@@ -185,28 +185,77 @@ export function patchClaudeMd(
     const sections = generateSections(discovered, existingHooks);
 
     // Replace <skills> section
-    content = content.replace(
-      /<skills>[\s\S]*?<\/skills>/i,
-      `<skills>\n${sections.skills}\n</skills>`
-    );
+    const hasSkillsSection = /<skills>[\s\S]*?<\/skills>/i.test(content);
+    if (hasSkillsSection) {
+      content = content.replace(
+        /<skills>[\s\S]*?<\/skills>/i,
+        `<skills>\n${sections.skills}\n</skills>`
+      );
+    } else {
+      // Insert before <execution_protocols> if it exists, otherwise append
+      if (/<execution_protocols>/i.test(content)) {
+        content = content.replace(
+          /(<execution_protocols>)/i,
+          `<skills>\n${sections.skills}\n</skills>\n\n$1`
+        );
+      } else {
+        content += `\n\n<skills>\n${sections.skills}\n</skills>\n`;
+      }
+    }
 
     // Replace <agent_catalog> section
-    content = content.replace(
-      /<agent_catalog>[\s\S]*?<\/agent_catalog>/i,
-      `<agent_catalog>\n${sections.agents}\n</agent_catalog>`
-    );
+    const hasAgentCatalog = /<agent_catalog>[\s\S]*?<\/agent_catalog>/i.test(content);
+    if (hasAgentCatalog) {
+      content = content.replace(
+        /<agent_catalog>[\s\S]*?<\/agent_catalog>/i,
+        `<agent_catalog>\n${sections.agents}\n</agent_catalog>`
+      );
+    } else {
+      if (/<skills>/i.test(content)) {
+        content = content.replace(
+          /(<skills>[\s\S]*?<\/skills>)/i,
+          `$1\n\n<agent_catalog>\n${sections.agents}\n</agent_catalog>`
+        );
+      } else {
+        content += `\n\n<agent_catalog>\n${sections.agents}\n</agent_catalog>\n`;
+      }
+    }
 
     // Replace <tools> section
-    content = content.replace(
-      /<tools>[\s\S]*?<\/tools>/i,
-      `<tools>\n${sections.tools}\n</tools>`
-    );
+    const hasToolsSection = /<tools>[\s\S]*?<\/tools>/i.test(content);
+    if (hasToolsSection) {
+      content = content.replace(
+        /<tools>[\s\S]*?<\/tools>/i,
+        `<tools>\n${sections.tools}\n</tools>`
+      );
+    } else {
+      if (/<agent_catalog>/i.test(content)) {
+        content = content.replace(
+          /(<agent_catalog>[\s\S]*?<\/agent_catalog>)/i,
+          `$1\n\n<tools>\n${sections.tools}\n</tools>`
+        );
+      } else {
+        content += `\n\n<tools>\n${sections.tools}\n</tools>\n`;
+      }
+    }
 
-    // Replace hooks description in <hooks_and_context>
-    content = content.replace(
-      /Hooks inject `<system-reminder>` tags\. Key patterns: [^\n]+/i,
-      sections.hooks
-    );
+    // Replace or insert hooks description
+    const hasHooksPattern = /Hooks inject `<system-reminder>` tags\. Key patterns: [^\n]+/i.test(content);
+    if (hasHooksPattern) {
+      content = content.replace(
+        /Hooks inject `<system-reminder>` tags\. Key patterns: [^\n]+/i,
+        sections.hooks
+      );
+    } else {
+      if (/<hooks_and_context>/i.test(content)) {
+        content = content.replace(
+          /(<hooks_and_context>[\s\S]*?<\/hooks_and_context>)/i,
+          `$1\n\n${sections.hooks}`
+        );
+      } else {
+        content += `\n\n${sections.hooks}\n`;
+      }
+    }
 
     writeFileSync(claudeMdPath, content, 'utf-8');
     return true;
