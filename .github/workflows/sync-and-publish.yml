@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       upstream_version:
-        description: 'Upstream version to sync (e.g., v4.11.0)'
+        description: 'Upstream version to sync (e.g., v4.11.1)'
         required: false
         type: string
 
