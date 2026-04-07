@@ -78,9 +78,11 @@ jobs:
       - name: Run tests
         run: npm test -- --run
 
-      - name: Publish to npm (@stanco323) via OIDC
+      - name: Publish to npm (@stanco323)
         if: steps.check_version.outputs.ALREADY_PUBLISHED == 'false'
         run: npm publish --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Push synced main
         run: |
