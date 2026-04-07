@@ -1317,6 +1317,7 @@ export function install(options: InstallOptions = {}): InstallResult {
         '  ',
         '  // 4. npm package (current project, global install, or branded fallback)',
         '  const npmHudPackages = [',
+        '    "@stanco323/oh-my-claude-code/dist/hud/index.js",',
         '    "oh-my-claude-sisyphus/dist/hud/index.js",',
         '    "oh-my-claudecode/dist/hud/index.js",',
         '  ];',
