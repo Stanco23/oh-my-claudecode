@@ -1,7 +1,7 @@
 /**
  * omc adapt CLI subcommand
  *
- * Manual invocation of the adapt skill for CLAUDE.md reconciliation.
+ * Manual invocation of the adapt reconciler for CLAUDE.md reconciliation.
  *
  * Usage:
  *   omc adapt --ask     Discover, show diff, apply only on approval (default)
@@ -9,9 +9,7 @@
  *   omc adapt --diff    Discover and show diff without patching or checkpointing
  */
 
-import { existsSync, readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { runAdapt, formatDiff } from '../../features/adapt/index.js';
 
 const ADAPT_USAGE = `
 Usage: omc adapt [--ask|--auto|--diff]
@@ -32,7 +30,6 @@ export interface AdaptArgs {
 }
 
 function parseAdaptArgs(args: string[]): AdaptArgs {
-  const flags = new Set(args.filter(a => !a.startsWith('--') || ['--ask', '--auto', '--diff'].includes(a)));
   const hasAsk = args.includes('--ask');
   const hasAuto = args.includes('--auto');
   const hasDiff = args.includes('--diff');
@@ -43,14 +40,6 @@ function parseAdaptArgs(args: string[]): AdaptArgs {
 
   const mode: AdaptMode = hasAuto ? 'auto' : hasDiff ? 'diff' : 'ask';
   return { mode };
-}
-
-function getSkillPath(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  // From src/cli/commands/adapt.ts → project root
-  const root = join(__dirname, '..', '..', '..');
-  return join(root, 'skills', 'adapt', 'SKILL.md');
 }
 
 export function adaptCommand(args: string[]): void {
@@ -64,23 +53,27 @@ export function adaptCommand(args: string[]): void {
     return;
   }
 
-  const skillPath = getSkillPath();
+  // Run the adapt reconciler
+  const result = runAdapt(mode);
 
-  if (!existsSync(skillPath)) {
-    console.error(`Error: adapt skill not found at ${skillPath}`);
-    console.error('Run "omc setup" to install the adapt skill.');
+  if (!result.success) {
+    console.error(`Error: ${result.error || 'Adapt reconciliation failed'}`);
     process.exit(1);
     return;
   }
 
-  try {
-    const skillContent = readFileSync(skillPath, 'utf-8');
-    // Inject mode as a directive
-    const adaptedContent = skillContent + `\n\n---\nMode: ${mode}\n`;
-    console.log('[ADAPT SKILL INVOKED]\n');
-    console.log(adaptedContent);
-  } catch (err) {
-    console.error(`Error reading adapt skill: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+  // Show diff
+  const diffOutput = formatDiff(result.diffs);
+  console.log(diffOutput);
+
+  // Show summary
+  console.log('\n--- Summary ---');
+  console.log(`Found ${result.diffs.length} change(s)`);
+  if (result.checkpointPath) {
+    console.log(`Checkpoint: ${result.checkpointPath}`);
+  }
+
+  if (result.diffs.length === 0) {
+    console.log('\nNo changes needed. CLAUDE.md is already up to date.');
   }
 }

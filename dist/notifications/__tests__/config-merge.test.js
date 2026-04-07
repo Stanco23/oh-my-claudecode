@@ -139,11 +139,11 @@ describe("getNotificationConfig - file + env deep merge", () => {
                 },
             },
         }));
-        vi.stubEnv("OMC_NOTIFY_TMUX_TAIL_LINES", "34");
+        vi.stubEnv("OMC_NOTIFY_TMUX_TAIL_LINES", "35");
         const config = getNotificationConfig();
         expect(config).not.toBeNull();
         expect(config.tmuxTailLines).toBe(21);
-        expect(getTmuxTailLines(config)).toBe(34);
+        expect(getTmuxTailLines(config)).toBe(35);
     });
     it("file config fields take precedence over env for same platform", () => {
         vi.mocked(existsSync).mockReturnValue(true);

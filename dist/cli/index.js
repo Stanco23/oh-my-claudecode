@@ -53,6 +53,23 @@ async function defaultAction() {
     }
     await launchCommand(args);
 }
+/**
+ * Adapt command - Reconcile CLAUDE.md dynamic sections
+ */
+program
+    .command('adapt')
+    .description('Discover available skills, agents, MCP servers, and hooks — diff against CLAUDE.md dynamic sections, checkpoint, and optionally patch')
+    .option('--ask', 'Ask mode (default): show diff, wait for approval, then patch')
+    .option('--auto', 'Auto mode: apply patch immediately, log to checkpoint')
+    .option('--diff', 'Show diff only: no checkpoint, no patch')
+    .addHelpText('after', `
+Examples:
+  $ omc adapt --diff          Show pending changes without patching
+  $ omc adapt --ask           Show diff and apply on approval
+  $ omc adapt --auto           Apply patch immediately with checkpoint`)
+    .action((options) => {
+    adaptCommand(Object.keys(options).length > 0 ? ['--' + Object.keys(options)[0]] : ['--ask']);
+});
 program
     .name('omc')
     .description('Multi-agent orchestration system for Claude Agent SDK')
