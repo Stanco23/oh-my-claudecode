@@ -12,7 +12,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getClaudeConfigDir } from '../../utils/paths.js';
 
 const ADAPT_USAGE = `
 Usage: omc adapt [--ask|--auto|--diff]

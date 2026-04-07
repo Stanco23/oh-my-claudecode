@@ -14,7 +14,8 @@ import { existsSync, readFileSync, unlinkSync, statSync, openSync, readSync, clo
 import { atomicWriteJsonSync } from '../../lib/atomic-write.js';
 import { join } from 'path';
 import { getHardMaxIterations } from '../../lib/security-config.js';
-import { getClaudeConfigDir, getGlobalOmcConfigCandidates } from '../../utils/paths.js';
+import { getClaudeConfigDir } from '../../utils/config-dir.js';
+import { getGlobalOmcConfigCandidates } from '../../utils/paths.js';
 import {
   readUltraworkState,
   writeUltraworkState,
@@ -368,12 +369,33 @@ function isCriticalContextStop(stopContext?: StopContext): boolean {
   return estimateTranscriptContextPercent(transcriptPath) >= CRITICAL_CONTEXT_STOP_PERCENT;
 }
 
+const AWAITING_CONFIRMATION_TTL_MS = 2 * 60 * 1000;
+
 function isAwaitingConfirmation(state: unknown): boolean {
-  return Boolean(
-    state &&
-    typeof state === 'object' &&
-    (state as Record<string, unknown>).awaiting_confirmation === true
-  );
+  if (!state || typeof state !== 'object') {
+    return false;
+  }
+
+  const stateRecord = state as Record<string, unknown>;
+  if (stateRecord.awaiting_confirmation !== true) {
+    return false;
+  }
+
+  const setAt =
+    (typeof stateRecord.awaiting_confirmation_set_at === 'string' && stateRecord.awaiting_confirmation_set_at) ||
+    (typeof stateRecord.started_at === 'string' && stateRecord.started_at) ||
+    null;
+
+  if (!setAt) {
+    return false;
+  }
+
+  const setAtMs = new Date(setAt).getTime();
+  if (!Number.isFinite(setAtMs)) {
+    return false;
+  }
+
+  return Date.now() - setAtMs < AWAITING_CONFIRMATION_TTL_MS;
 }
 
 /**

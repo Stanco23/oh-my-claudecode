@@ -45,9 +45,10 @@ jobs:
       - name: Generate release notes
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          # Run release.ts in dry-run to generate fresh release-body.md
-          # without modifying any files (version already bumped)
-          npx tsx scripts/release.ts "$VERSION" --dry-run 2>/dev/null || true
+          # Run release.ts normally so it writes .github/release-body.md in the
+          # ephemeral CI workspace. The tag version is already set before this
+          # workflow runs, so the generated file can be consumed directly.
+          npx tsx scripts/release.ts "$VERSION" 2>/dev/null || true
           if [ -f .github/release-body.md ]; then
             echo "Using freshly generated release-body.md"
             cp .github/release-body.md release-notes.md
@@ -60,12 +61,13 @@ jobs:
             echo "npm install -g oh-my-claude-sisyphus@${VERSION}" >> release-notes.md
             echo '```' >> release-notes.md
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           body_path: release-notes.md
-          generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
         env:

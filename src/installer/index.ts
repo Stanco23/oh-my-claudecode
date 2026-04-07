@@ -8,7 +8,7 @@
  * Bash hook scripts were removed in v3.9.0.
  */
 
-import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, chmodSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, chmodSync, readdirSync, cpSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
@@ -19,12 +19,14 @@ import {
   getHooksSettingsConfig,
 } from './hooks.js';
 import { getRuntimePackageVersion } from '../lib/version.js';
-import { getConfigDir } from '../utils/config-dir.js';
+import { getClaudeConfigDir } from '../utils/config-dir.js';
 import { resolveNodeBinary } from '../utils/resolve-node.js';
+import { parseFrontmatter } from '../utils/frontmatter.js';
+import { isSkininthegamebrosUser } from '../utils/skininthegamebros-user.js';
 import { syncUnifiedMcpRegistryTargets } from './mcp-registry.js';
 
 /** Claude Code configuration directory */
-export const CLAUDE_CONFIG_DIR = getConfigDir();
+export const CLAUDE_CONFIG_DIR = getClaudeConfigDir();
 export const AGENTS_DIR = join(CLAUDE_CONFIG_DIR, 'agents');
 export const COMMANDS_DIR = join(CLAUDE_CONFIG_DIR, 'commands');
 export const SKILLS_DIR = join(CLAUDE_CONFIG_DIR, 'skills');
@@ -44,6 +46,26 @@ export const CORE_COMMANDS: string[] = [];
 export const VERSION = getRuntimePackageVersion();
 
 const OMC_VERSION_MARKER_PATTERN = /<!-- OMC:VERSION:([^\s]+) -->/;
+
+const CC_NATIVE_COMMANDS = new Set([
+  'review',
+  'plan',
+  'security-review',
+  'init',
+  'doctor',
+  'help',
+  'config',
+  'clear',
+  'compact',
+  'memory',
+]);
+
+const SKININTHEGAMEBROS_ONLY_SKILLS = new Set([
+  'remember',
+  'verify',
+  'debug',
+  'skillify',
+]);
 
 /**
  * Detects the newest installed OMC version from persistent metadata or
@@ -222,6 +244,7 @@ export interface InstallOptions {
   forceHooks?: boolean;
   refreshHooksInPlugin?: boolean;
   skipHud?: boolean;
+  noPlugin?: boolean;
 }
 
 /**
@@ -402,9 +425,14 @@ const STANDALONE_HOOK_TEMPLATE_FILES = [
 function ensureStandaloneHookScripts(log: (msg: string) => void): void {
   const packageDir = getPackageDir();
   const templatesDir = join(packageDir, 'templates', 'hooks');
+  const templatesLibDir = join(templatesDir, 'lib');
+  const hooksLibDir = join(HOOKS_DIR, 'lib');
 
   if (!existsSync(HOOKS_DIR)) {
     mkdirSync(HOOKS_DIR, { recursive: true });
+  }
+  if (!existsSync(hooksLibDir)) {
+    mkdirSync(hooksLibDir, { recursive: true });
   }
 
   for (const filename of STANDALONE_HOOK_TEMPLATE_FILES) {
@@ -416,11 +444,33 @@ function ensureStandaloneHookScripts(log: (msg: string) => void): void {
     }
   }
 
+  for (const filename of readdirSync(templatesLibDir)) {
+    if (filename === 'config-dir.mjs') continue; // sourced from scripts/lib/ below
+    const sourcePath = join(templatesLibDir, filename);
+    const targetPath = join(hooksLibDir, filename);
+    copyFileSync(sourcePath, targetPath);
+    if (!isWindows()) {
+      chmodSync(targetPath, 0o755);
+    }
+  }
+
+  // config-dir.mjs: canonical source is scripts/lib/, not templates (avoids duplication)
+  const configDirHelperMjs = join(packageDir, 'scripts', 'lib', 'config-dir.mjs');
+  const configDirHelperMjsDest = join(hooksLibDir, 'config-dir.mjs');
+  copyFileSync(configDirHelperMjs, configDirHelperMjsDest);
+  if (!isWindows()) {
+    chmodSync(configDirHelperMjsDest, 0o755);
+  }
+
   if (!isWindows()) {
     const findNodeSrc = join(packageDir, 'scripts', 'find-node.sh');
     const findNodeDest = join(HOOKS_DIR, 'find-node.sh');
+    const configDirHelperSrc = join(packageDir, 'scripts', 'lib', 'config-dir.sh');
+    const configDirHelperDest = join(hooksLibDir, 'config-dir.sh');
     copyFileSync(findNodeSrc, findNodeDest);
+    copyFileSync(configDirHelperSrc, configDirHelperDest);
     chmodSync(findNodeDest, 0o755);
+    chmodSync(configDirHelperDest, 0o755);
   }
 
   log('  Installed standalone hook scripts');
@@ -482,6 +532,20 @@ function directoryHasMarkdownFiles(directory: string): boolean {
   }
 }
 
+function directoryHasSkillDefinitions(directory: string): boolean {
+  if (!existsSync(directory)) {
+    return false;
+  }
+
+  try {
+    return readdirSync(directory, { withFileTypes: true }).some(entry =>
+      entry.isDirectory() && existsSync(join(directory, entry.name, 'SKILL.md'))
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function getInstalledOmcPluginRoots(): string[] {
   const pluginRoots = new Set<string>();
   const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT?.trim();
@@ -527,6 +591,45 @@ export function hasPluginProvidedAgentFiles(): boolean {
   return getInstalledOmcPluginRoots().some(pluginRoot =>
     directoryHasMarkdownFiles(join(pluginRoot, 'agents'))
   );
+}
+
+export function hasPluginProvidedSkillFiles(): boolean {
+  return getInstalledOmcPluginRoots().some(pluginRoot =>
+    directoryHasSkillDefinitions(join(pluginRoot, 'skills'))
+  );
+}
+
+export function hasEnabledOmcPlugin(): boolean {
+  if (process.env.CLAUDE_PLUGIN_ROOT?.trim()) {
+    return true;
+  }
+
+  if (!existsSync(SETTINGS_FILE)) {
+    return false;
+  }
+
+  try {
+    const settings = JSON.parse(readFileSync(SETTINGS_FILE, 'utf-8')) as {
+      plugins?: unknown;
+    };
+    const plugins = settings.plugins;
+
+    if (Array.isArray(plugins)) {
+      return plugins.some(plugin =>
+        typeof plugin === 'string' && plugin.toLowerCase().includes('oh-my-claudecode')
+      );
+    }
+
+    if (plugins && typeof plugins === 'object') {
+      return Object.entries(plugins as Record<string, unknown>).some(([pluginId, value]) =>
+        pluginId.toLowerCase().includes('oh-my-claudecode') && value !== false
+      );
+    }
+  } catch {
+    // Ignore unreadable settings and treat plugin mode as disabled.
+  }
+
+  return false;
 }
 
 /**
@@ -616,17 +719,55 @@ function loadCommandDefinitions(): Record<string, string> {
   return definitions;
 }
 
-/**
- * Load CLAUDE.md content from /docs/CLAUDE.md
- */
-function loadBundledSkillContent(skillName: string): string | null {
-  const skillPath = join(getPackageDir(), 'skills', skillName, 'SKILL.md');
+function toSafeStandaloneSkillName(name: string): string {
+  const normalized = name.trim();
+  return CC_NATIVE_COMMANDS.has(normalized.toLowerCase())
+    ? `omc-${normalized}`
+    : normalized;
+}
 
-  if (!existsSync(skillPath)) {
-    return null;
+function syncBundledSkillDefinitions(log: (msg: string) => void, options?: { safeStandaloneNames?: boolean }): string[] {
+  const skillsDir = join(getPackageDir(), 'skills');
+  const installedSkills: string[] = [];
+
+  if (!existsSync(skillsDir)) {
+    return installedSkills;
   }
 
-  return readFileSync(skillPath, 'utf-8');
+  const seenTargetDirs = new Set<string>();
+
+  for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (SKININTHEGAMEBROS_ONLY_SKILLS.has(entry.name) && !isSkininthegamebrosUser()) {
+      continue;
+    }
+
+    const sourceDir = join(skillsDir, entry.name);
+    const sourceSkillPath = join(sourceDir, 'SKILL.md');
+    if (!existsSync(sourceSkillPath)) continue;
+
+    let targetDirName = entry.name;
+    if (options?.safeStandaloneNames) {
+      const content = readFileSync(sourceSkillPath, 'utf-8');
+      const { metadata } = parseFrontmatter(content);
+      const rawName = typeof metadata.name === 'string' && metadata.name.trim().length > 0
+        ? metadata.name
+        : entry.name;
+      targetDirName = toSafeStandaloneSkillName(rawName);
+    }
+
+    const dedupeKey = targetDirName.toLowerCase();
+    if (seenTargetDirs.has(dedupeKey)) continue;
+    seenTargetDirs.add(dedupeKey);
+
+    const relativePath = join(targetDirName, 'SKILL.md');
+    const targetDir = join(SKILLS_DIR, targetDirName);
+    cpSync(sourceDir, targetDir, { recursive: true, force: true });
+    installedSkills.push(relativePath.replace(/\\/g, '/'));
+    log(`  Synced ${relativePath}`);
+  }
+
+  return installedSkills;
 }
 
 function loadClaudeMdContent(): string {
@@ -828,7 +969,11 @@ export function install(options: InstallOptions = {}): InstallResult {
   const runningAsPlugin = isRunningAsPlugin();
   const projectScoped = isProjectScopedPlugin();
   const pluginProvidesAgentFiles = hasPluginProvidedAgentFiles();
+  const pluginProvidesSkillFiles = hasPluginProvidedSkillFiles();
+  const enabledOmcPlugin = hasEnabledOmcPlugin();
   const shouldInstallLegacyAgents = !runningAsPlugin && !pluginProvidesAgentFiles;
+  const shouldInstallBundledSkills =
+    options.noPlugin === true || !enabledOmcPlugin || !pluginProvidesSkillFiles;
   const allowPluginHookRefresh = runningAsPlugin && options.refreshHooksInPlugin && !projectScoped;
   if (runningAsPlugin) {
     log('Detected Claude Code plugin context - skipping agent/command file installation');
@@ -859,8 +1004,12 @@ export function install(options: InstallOptions = {}): InstallResult {
 
   try {
     // Ensure base config directory exists (skip for project-scoped plugins)
-    if (!projectScoped && !existsSync(CLAUDE_CONFIG_DIR)) {
+    if ((!projectScoped || shouldInstallBundledSkills) && !existsSync(CLAUDE_CONFIG_DIR)) {
       mkdirSync(CLAUDE_CONFIG_DIR, { recursive: true });
+    }
+
+    if (shouldInstallBundledSkills && !existsSync(SKILLS_DIR)) {
+      mkdirSync(SKILLS_DIR, { recursive: true });
     }
 
     // Skip agent/command/hook file installation when running as plugin
@@ -930,25 +1079,6 @@ export function install(options: InstallOptions = {}): InstallResult {
         }
       }
 
-      // NOTE: SKILL_DEFINITIONS removed - skills now only installed via COMMAND_DEFINITIONS
-      // to avoid duplicate entries in Claude Code's available skills list
-
-      const omcReferenceSkillContent = loadBundledSkillContent('omc-reference');
-      if (omcReferenceSkillContent) {
-        const omcReferenceDir = join(SKILLS_DIR, 'omc-reference');
-        const omcReferencePath = join(omcReferenceDir, 'SKILL.md');
-        if (!existsSync(omcReferenceDir)) {
-          mkdirSync(omcReferenceDir, { recursive: true });
-        }
-        if (existsSync(omcReferencePath) && !options.force) {
-          log('  Skipping omc-reference/SKILL.md (already exists)');
-        } else {
-          writeFileSync(omcReferencePath, omcReferenceSkillContent);
-          result.installedSkills.push('omc-reference/SKILL.md');
-          log('  Installed omc-reference/SKILL.md');
-        }
-      }
-
       // Standalone installs still need ~/.claude/hooks/* scripts because their
       // settings.json hook entries execute those local paths directly. Plugin installs
       // keep using hooks/hooks.json + scripts/ under CLAUDE_PLUGIN_ROOT.
@@ -956,6 +1086,21 @@ export function install(options: InstallOptions = {}): InstallResult {
       result.hooksConfigured = true; // Will be set properly after consolidated settings.json write
     } else {
       log('Skipping agent/command/hook files (managed by plugin system)');
+    }
+
+    if (shouldInstallBundledSkills) {
+      log(options.noPlugin
+        ? 'Installing bundled skills from local package (--no-plugin)...'
+        : !enabledOmcPlugin
+          ? 'Installing bundled skills from local package (no enabled OMC plugin detected)...'
+          : 'Installing bundled skills from local package (enabled plugin skill files not found)...');
+      result.installedSkills.push(...syncBundledSkillDefinitions(log, {
+        safeStandaloneNames: !enabledOmcPlugin || options.noPlugin === true,
+      }));
+    } else if (pluginProvidesSkillFiles) {
+      log('Skipping bundled skill installation (plugin-provided skills are available). Use --no-plugin to force local skill sync.');
+    } else if (runningAsPlugin) {
+      log('Skipping bundled skill installation (managed by plugin system)');
     }
 
     // Install CLAUDE.md with merge support.
@@ -1032,7 +1177,11 @@ export function install(options: InstallOptions = {}): InstallResult {
         'import { createRequire } from "node:module";',
         'import { homedir } from "node:os";',
         'import { dirname, join, resolve } from "node:path";',
-        'import { pathToFileURL } from "node:url";',
+        'import { fileURLToPath, pathToFileURL } from "node:url";',
+        '',
+        'const __filename = fileURLToPath(import.meta.url);',
+        'const __dirname = dirname(__filename);',
+        'const { getClaudeConfigDir } = await import(pathToFileURL(join(__dirname, "lib", "config-dir.mjs")).href);',
         '',
         'function uniquePaths(paths) {',
         '  return [...new Set(paths.filter(Boolean).map((candidate) => resolve(candidate)))];',
@@ -1127,7 +1276,7 @@ export function install(options: InstallOptions = {}): InstallResult {
         '  ',
         '  // 2. Plugin cache (for production installs)',
         '  // Respect CLAUDE_CONFIG_DIR so installs under a custom config dir are found',
-        '  const configDir = process.env.CLAUDE_CONFIG_DIR || join(home, ".claude");',
+        '  const configDir = getClaudeConfigDir();',
         '  const pluginCacheBase = join(configDir, "plugins", "cache", "omc", "oh-my-claudecode");',
         '  if (existsSync(pluginCacheBase)) {',
         '    try {',
@@ -1276,6 +1425,17 @@ export function install(options: InstallOptions = {}): InstallResult {
       if (hudScriptPath) {
         const nodeBin = resolveNodeBinary();
         const absoluteCommand = '"' + nodeBin + '" "' + hudScriptPath.replace(/\\/g, '/') + '"';
+        try {
+          const configDirHelperMjsSrc = join(__dirname, '..', '..', 'scripts', 'lib', 'config-dir.mjs');
+          const hudLibDir = join(HUD_DIR, 'lib');
+          const configDirHelperMjsDest = join(hudLibDir, 'config-dir.mjs');
+          if (!existsSync(hudLibDir)) {
+            mkdirSync(hudLibDir, { recursive: true });
+          }
+          copyFileSync(configDirHelperMjsSrc, configDirHelperMjsDest);
+        } catch {
+          // Keep HUD installation best-effort if helper copy fails unexpectedly.
+        }
 
         // On Unix, use find-node.sh for portable $HOME paths (multi-machine sync)
         // and robust node discovery (nvm/fnm in non-interactive shells).
@@ -1286,8 +1446,16 @@ export function install(options: InstallOptions = {}): InstallResult {
           try {
             const findNodeSrc = join(__dirname, '..', '..', 'scripts', 'find-node.sh');
             const findNodeDest = join(HUD_DIR, 'find-node.sh');
+            const configDirHelperSrc = join(__dirname, '..', '..', 'scripts', 'lib', 'config-dir.sh');
+            const hudLibDir = join(HUD_DIR, 'lib');
+            const configDirHelperDest = join(hudLibDir, 'config-dir.sh');
+            if (!existsSync(hudLibDir)) {
+              mkdirSync(hudLibDir, { recursive: true });
+            }
             copyFileSync(findNodeSrc, findNodeDest);
+            copyFileSync(configDirHelperSrc, configDirHelperDest);
             chmodSync(findNodeDest, 0o755);
+            chmodSync(configDirHelperDest, 0o755);
             statusLineCommand = buildStatusLineCommand(nodeBin, hudScriptPath.replace(/\\/g, '/'), findNodeDest);
           } catch {
             // Fallback to bare node if find-node.sh copy fails
